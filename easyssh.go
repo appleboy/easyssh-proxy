@@ -173,9 +173,13 @@ func (ssh_conf *MakeConfig) Run(command string, timeout int) (outStr string, err
 		case isTimeout = <-doneChan:
 			stillGoing = false
 		case outline := <-stdoutChan:
-			outStr += outline + "\n"
+			if outline != "" {
+				outStr += outline + "\n"
+			}
 		case errline := <-stderrChan:
-			errStr += errline + "\n"
+			if errline != "" {
+				errStr += errline + "\n"
+			}
 		}
 	}
 	// return the concatenation of all signals from the output channel
