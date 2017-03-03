@@ -3,6 +3,7 @@ package easyssh
 import (
 	"os"
 	"os/user"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,11 +16,11 @@ func TestGetKeyFile(t *testing.T) {
 	assert.Equal(t, "open abc: no such file or directory", err.Error())
 
 	// wrong format
-	_, err = getKeyFile("../tests/.ssh/id_rsa.pub")
+	_, err = getKeyFile("./tests/.ssh/id_rsa.pub")
 	assert.Error(t, err)
 	assert.Equal(t, "ssh: no key found", err.Error())
 
-	_, err = getKeyFile("../tests/.ssh/id_rsa")
+	_, err = getKeyFile("./tests/.ssh/id_rsa")
 	assert.NoError(t, err)
 }
 
@@ -28,11 +29,13 @@ func TestRunCommand(t *testing.T) {
 		Server:  "localhost",
 		User:    "drone-scp",
 		Port:    "22",
-		KeyPath: "../tests/.ssh/id_rsa",
+		KeyPath: "./tests/.ssh/id_rsa",
 	}
 
-	output, err := ssh.Run("whoami")
-	assert.Equal(t, "drone-scp\n", output)
+	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	assert.Equal(t, "drone-scp\n\n", outStr)
+	assert.Equal(t, "\n", errStr)
+	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
 
@@ -41,10 +44,10 @@ func TestSCPCommand(t *testing.T) {
 		Server:  "localhost",
 		User:    "drone-scp",
 		Port:    "22",
-		KeyPath: "../tests/.ssh/id_rsa",
+		KeyPath: "./tests/.ssh/id_rsa",
 	}
 
-	err := ssh.Scp("../tests/a.txt")
+	err := ssh.Scp("./tests/a.txt", "a.txt")
 	assert.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
@@ -53,7 +56,7 @@ func TestSCPCommand(t *testing.T) {
 	}
 
 	// check file exist
-	if _, err := os.Stat(u.HomeDir + "/a.txt"); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(u.HomeDir, "a.txt")); os.IsNotExist(err) {
 		t.Fatalf("SCP-error: %v", err)
 	}
 }
@@ -93,7 +96,7 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 `,
 	}
 
-	err := ssh.Scp("../tests/a.txt")
+	err := ssh.Scp("./tests/a.txt", "a.txt")
 	assert.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
@@ -102,7 +105,7 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 	}
 
 	// check file exist
-	if _, err := os.Stat(u.HomeDir + "/a.txt"); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(u.HomeDir, "a.txt")); os.IsNotExist(err) {
 		t.Fatalf("SCP-error: %v", err)
 	}
 }
@@ -115,7 +118,7 @@ func TestSCPCommandWithPassword(t *testing.T) {
 		Password: "1234",
 	}
 
-	err := ssh.Scp("../tests/b.txt")
+	err := ssh.Scp("./tests/b.txt", "b.txt")
 	assert.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
@@ -124,7 +127,7 @@ func TestSCPCommandWithPassword(t *testing.T) {
 	}
 
 	// check file exist
-	if _, err := os.Stat(u.HomeDir + "/b.txt"); os.IsNotExist(err) {
+	if _, err := os.Stat(path.Join(u.HomeDir, "b.txt")); os.IsNotExist(err) {
 		t.Fatalf("SCP-error: %v", err)
 	}
 }
