@@ -1,0 +1,25 @@
+workspace:
+  base: /srv/app
+  path: src/github.com/appleboy/easyssh-proxy
+
+pipeline:
+  clone:
+    image: plugins/git
+    tags: true
+
+  test:
+    image: appleboy/golang-testing
+    pull: true
+    environment:
+      TAGS: netgo
+      GOPATH: /srv/app
+    commands:
+      - make ssh-server
+      - make vet
+      - make lint
+      # - make test
+      - coverage all
+      - make coverage
+
+    when:
+      event: [ push, tag, pull_request ]
