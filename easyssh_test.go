@@ -33,9 +33,23 @@ func TestRunCommand(t *testing.T) {
 	}
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
-	assert.Equal(t, "drone-scp\n\n", outStr)
-	assert.Equal(t, "\n", errStr)
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+
+	// error message: command not found
+	outStr, errStr, isTimeout, err = ssh.Run("whoami1234", 10)
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "bash: whoami1234: command not found\n", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+
+	// error message: command not found
+	outStr, errStr, isTimeout, err = ssh.Run("sleep 5", 1)
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "Run Command Timeout!\n", errStr)
+	assert.False(t, isTimeout)
 	assert.NoError(t, err)
 }
 
@@ -111,7 +125,7 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 	err := ssh.Scp("./tests/test.txt", "a.txt")
 	assert.Error(t, err)
 
-	// target file not found
+	// target file not found ex: appleboy folder not found
 	err = ssh.Scp("./tests/a.txt", "/appleboy/a.txt")
 	assert.Error(t, err)
 
