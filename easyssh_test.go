@@ -40,14 +40,25 @@ func TestRunCommand(t *testing.T) {
 }
 
 func TestSCPCommand(t *testing.T) {
+	// wrong key
 	ssh := &MakeConfig{
+		Server:  "localhost",
+		User:    "drone-scp",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa.pub",
+	}
+
+	err := ssh.Scp("./tests/a.txt", "a.txt")
+	assert.Error(t, err)
+
+	ssh = &MakeConfig{
 		Server:  "localhost",
 		User:    "drone-scp",
 		Port:    "22",
 		KeyPath: "./tests/.ssh/id_rsa",
 	}
 
-	err := ssh.Scp("./tests/a.txt", "a.txt")
+	err = ssh.Scp("./tests/a.txt", "a.txt")
 	assert.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
@@ -96,7 +107,15 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 `,
 	}
 
-	err := ssh.Scp("./tests/a.txt", "a.txt")
+	// source file not found
+	err := ssh.Scp("./tests/test.txt", "a.txt")
+	assert.Error(t, err)
+
+	// target file not found
+	err = ssh.Scp("./tests/a.txt", "/appleboy/a.txt")
+	assert.Error(t, err)
+
+	err = ssh.Scp("./tests/a.txt", "a.txt")
 	assert.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
