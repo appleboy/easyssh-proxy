@@ -25,14 +25,28 @@ func TestGetKeyFile(t *testing.T) {
 }
 
 func TestRunCommand(t *testing.T) {
+	// wrong key
 	ssh := &MakeConfig{
+		Server:  "localhost",
+		User:    "drone-scp",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa.pub",
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "", errStr)
+	assert.False(t, isTimeout)
+	assert.Error(t, err)
+
+	ssh = &MakeConfig{
 		Server:  "localhost",
 		User:    "drone-scp",
 		Port:    "22",
 		KeyPath: "./tests/.ssh/id_rsa",
 	}
 
-	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	outStr, errStr, isTimeout, err = ssh.Run("whoami", 10)
 	assert.Equal(t, "drone-scp\n", outStr)
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
