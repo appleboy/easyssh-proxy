@@ -172,8 +172,27 @@ func TestProxyClient(t *testing.T) {
 	}
 
 	// password of proxy client is incorrect.
-	// can't connect proxy client
+	// can't connect proxy server
 	session, err := ssh.connect()
+	assert.Nil(t, session)
+	assert.Error(t, err)
+
+	ssh = &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "123456",
+		Proxy: defaultConfig{
+			User:     "drone-scp",
+			Server:   "localhost",
+			Port:     "22",
+			Password: "1234",
+		},
+	}
+
+	// password of target client is incorrect.
+	// can't connect target server
+	session, err = ssh.connect()
 	assert.Nil(t, session)
 	assert.Error(t, err)
 }
