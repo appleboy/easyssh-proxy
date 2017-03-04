@@ -231,6 +231,27 @@ func TestProxyClient(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestProxyClientSSHCommand(t *testing.T) {
+	ssh := &MakeConfig{
+		User:    "drone-scp",
+		Server:  "localhost",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Proxy: defaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+}
+
 func TestSCPCommandWithPassword(t *testing.T) {
 	ssh := &MakeConfig{
 		Server:   "localhost",
