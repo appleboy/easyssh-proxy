@@ -178,15 +178,15 @@ func TestProxyClient(t *testing.T) {
 	assert.Error(t, err)
 
 	ssh = &MakeConfig{
-		Server:   "localhost",
+		Server:   "www.che.ccu.edu.tw",
 		User:     "drone-scp",
-		Port:     "22",
+		Port:     "228",
 		Password: "123456",
 		Proxy: defaultConfig{
-			User:     "drone-scp",
-			Server:   "localhost",
-			Port:     "22",
-			Password: "1234",
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
 		},
 	}
 
@@ -195,6 +195,23 @@ func TestProxyClient(t *testing.T) {
 	session, err = ssh.connect()
 	assert.Nil(t, session)
 	assert.Error(t, err)
+
+	ssh = &MakeConfig{
+		User:    "drone-scp",
+		Server:  "localhost",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Proxy: defaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+
+	session, err = ssh.connect()
+	assert.NotNil(t, session)
+	assert.NoError(t, err)
 }
 
 func TestSCPCommandWithPassword(t *testing.T) {
