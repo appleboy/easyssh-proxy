@@ -151,9 +151,6 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 		}
 
 		client = ssh.NewClient(ncc, chans, reqs)
-		if err != nil {
-			return nil, err
-		}
 	} else {
 		client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
 		if err != nil {
