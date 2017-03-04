@@ -35,6 +35,14 @@ type MakeConfig struct {
 	Timeout  time.Duration
 }
 
+type sshConfig struct {
+	User     string
+	Key      string
+	KeyPath  string
+	Password string
+	Timeout  time.Duration
+}
+
 // returns ssh.Signer from user you running app home path + cutted key path.
 // (ex. pubkey,err := getKeyFile("/.ssh/id_rsa") )
 func getKeyFile(keypath string) (ssh.Signer, error) {
@@ -51,14 +59,13 @@ func getKeyFile(keypath string) (ssh.Signer, error) {
 	return pubkey, nil
 }
 
-// connects to remote server using MakeConfig struct and returns *ssh.Session
-func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
+func getSSHConfig(config sshConfig) *ssh.ClientConfig {
 	// auths holds the detected ssh auth methods
 	auths := []ssh.AuthMethod{}
 
 	// figure out what auths are requested, what is supported
-	if ssh_conf.Password != "" {
-		auths = append(auths, ssh.Password(ssh_conf.Password))
+	if config.Password != "" {
+		auths = append(auths, ssh.Password(config.Password))
 	}
 
 	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
@@ -66,22 +73,33 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 		defer sshAgent.Close()
 	}
 
-	if ssh_conf.KeyPath != "" {
-		if pubkey, err := getKeyFile(ssh_conf.KeyPath); err == nil {
+	if config.KeyPath != "" {
+		if pubkey, err := getKeyFile(config.KeyPath); err == nil {
 			auths = append(auths, ssh.PublicKeys(pubkey))
 		}
 	}
 
-	if ssh_conf.Key != "" {
-		signer, _ := ssh.ParsePrivateKey([]byte(ssh_conf.Key))
+	if config.Key != "" {
+		signer, _ := ssh.ParsePrivateKey([]byte(config.Key))
 		auths = append(auths, ssh.PublicKeys(signer))
 	}
 
-	config := &ssh.ClientConfig{
-		Timeout: ssh_conf.Timeout,
-		User:    ssh_conf.User,
+	return &ssh.ClientConfig{
+		Timeout: config.Timeout,
+		User:    config.User,
 		Auth:    auths,
 	}
+}
+
+// connect to remote server using MakeConfig struct and returns *ssh.Session
+func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
+	config := getSSHConfig(sshConfig{
+		User:     ssh_conf.User,
+		Key:      ssh_conf.Key,
+		KeyPath:  ssh_conf.KeyPath,
+		Password: ssh_conf.Password,
+		Timeout:  ssh_conf.Timeout,
+	})
 
 	client, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), config)
 	if err != nil {
