@@ -25,23 +25,44 @@ import (
 // Port is SSH server port on remote machine.
 // Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
 // Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
-type MakeConfig struct {
-	User     string
-	Server   string
-	Key      string
-	KeyPath  string
-	Port     string
-	Password string
-	Timeout  time.Duration
-}
+type (
+	defaultConfig struct {
+		User     string
+		Server   string
+		Key      string
+		KeyPath  string
+		Port     string
+		Password string
+		Timeout  time.Duration
+	}
 
-type sshConfig struct {
-	User     string
-	Key      string
-	KeyPath  string
-	Password string
-	Timeout  time.Duration
-}
+	MakeConfig struct {
+		User     string
+		Server   string
+		Key      string
+		KeyPath  string
+		Port     string
+		Password string
+		Timeout  time.Duration
+		Proxy    struct {
+			User     string
+			Server   string
+			Key      string
+			KeyPath  string
+			Port     string
+			Password string
+			Timeout  time.Duration
+		}
+	}
+
+	sshConfig struct {
+		User     string
+		Key      string
+		KeyPath  string
+		Password string
+		Timeout  time.Duration
+	}
+)
 
 // returns ssh.Signer from user you running app home path + cutted key path.
 // (ex. pubkey,err := getKeyFile("/.ssh/id_rsa") )
@@ -93,7 +114,10 @@ func getSSHConfig(config sshConfig) *ssh.ClientConfig {
 
 // connect to remote server using MakeConfig struct and returns *ssh.Session
 func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
-	config := getSSHConfig(sshConfig{
+	var client *ssh.Client
+	var err error
+
+	targetConfig := getSSHConfig(sshConfig{
 		User:     ssh_conf.User,
 		Key:      ssh_conf.Key,
 		KeyPath:  ssh_conf.KeyPath,
@@ -101,9 +125,37 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 		Timeout:  ssh_conf.Timeout,
 	})
 
-	client, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), config)
-	if err != nil {
-		return nil, err
+	// Enable proxy command
+	if ssh_conf.Proxy.Server != "" {
+		proxyConfig := getSSHConfig(sshConfig{
+			User:     ssh_conf.Proxy.User,
+			Key:      ssh_conf.Proxy.Key,
+			KeyPath:  ssh_conf.Proxy.KeyPath,
+			Password: ssh_conf.Proxy.Password,
+			Timeout:  ssh_conf.Proxy.Timeout,
+		})
+
+		proxyClient, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		conn, err := proxyClient.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
+		if err != nil {
+			return nil, err
+		}
+
+		ncc, chans, reqs, err := ssh.NewClientConn(conn, net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		client = ssh.NewClient(ncc, chans, reqs)
+	} else {
+		client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	session, err := client.NewSession()

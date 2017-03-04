@@ -157,6 +157,101 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 	}
 }
 
+func TestProxyClient(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "1234",
+		Proxy: defaultConfig{
+			User:     "drone-scp",
+			Server:   "localhost",
+			Port:     "22",
+			Password: "123456",
+		},
+	}
+
+	// password of proxy client is incorrect.
+	// can't connect proxy server
+	session, err := ssh.connect()
+	assert.Nil(t, session)
+	assert.Error(t, err)
+
+	ssh = &MakeConfig{
+		Server:   "www.che.ccu.edu.tw",
+		User:     "drone-scp",
+		Port:     "228",
+		Password: "123456",
+		Proxy: defaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+
+	// proxy client can't dial to target server
+	session, err = ssh.connect()
+	assert.Nil(t, session)
+	assert.Error(t, err)
+
+	ssh = &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "123456",
+		Proxy: defaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+
+	// proxy client can't create new client connection of target
+	session, err = ssh.connect()
+	assert.Nil(t, session)
+	assert.Error(t, err)
+
+	ssh = &MakeConfig{
+		User:    "drone-scp",
+		Server:  "localhost",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Proxy: defaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+
+	session, err = ssh.connect()
+	assert.NotNil(t, session)
+	assert.NoError(t, err)
+}
+
+func TestProxyClientSSHCommand(t *testing.T) {
+	ssh := &MakeConfig{
+		User:    "drone-scp",
+		Server:  "localhost",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Proxy: defaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+}
+
 func TestSCPCommandWithPassword(t *testing.T) {
 	ssh := &MakeConfig{
 		Server:   "localhost",
