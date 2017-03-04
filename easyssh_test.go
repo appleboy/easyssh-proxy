@@ -157,6 +157,27 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 	}
 }
 
+func TestProxyClient(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "1234",
+		Proxy: defaultConfig{
+			User:     "drone-scp",
+			Server:   "localhost",
+			Port:     "22",
+			Password: "123456",
+		},
+	}
+
+	// password of proxy client is incorrect.
+	// can't connect proxy client
+	session, err := ssh.connect()
+	assert.Nil(t, session)
+	assert.Error(t, err)
+}
+
 func TestSCPCommandWithPassword(t *testing.T) {
 	ssh := &MakeConfig{
 		Server:   "localhost",
