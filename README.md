@@ -8,7 +8,20 @@ easyssh-proxy provides a simple implementation of some SSH protocol features in 
 
 This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but add some features as the following.
 
-* Support plain text of user private key.
-* Support key path of user private key.
-* Support SSH ProxyCommand.
-* Support Timeout for the TCP connection to establish.
+* [x] Support plain text of user private key.
+* [x] Support key path of user private key.
+* [x] Support Timeout for the TCP connection to establish.
+* [x] Support SSH ProxyCommand.
+
+```
+     +-------+       +----------+      +-----------+
+     | Laptop| <--> | Jumphost | <--> | FooServer |
+     +-------+       +----------+      +-----------+
+
+                         OR
+
+     +-------+       +----------+      +-----------+
+     | Laptop| <--> | Firewall | <--> | FooServer |
+     +-------+       +----------+      +-----------+
+    192.168.1.5       121.1.2.3         10.10.29.68
+```
