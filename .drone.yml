@@ -14,9 +14,11 @@ pipeline:
       TAGS: netgo
       GOPATH: /srv/app
     commands:
-      - make ssh-server
+      - export PATH=$PATH:/srv/app/bin
       - make vet
       - make lint
+      - make embedmd
+      - make ssh-server
       - coverage all
       - make coverage
 
