@@ -1,5 +1,5 @@
 workspace:
-  base: /srv/app
+  base: /go
   path: src/github.com/appleboy/easyssh-proxy
 
 pipeline:
@@ -12,7 +12,7 @@ pipeline:
     pull: true
     environment:
       TAGS: netgo
-      GOPATH: /srv/app
+      GOPATH: /go
     commands:
       - make vet
       - make lint

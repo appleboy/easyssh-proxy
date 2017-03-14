@@ -32,7 +32,6 @@ embedmd:
 	@hash embedmd > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
 		go get -u github.com/campoy/embedmd; \
 	fi
-	go get -u github.com/campoy/embedmd
 	embedmd -d *.md
 
 test:
