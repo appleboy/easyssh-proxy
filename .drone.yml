@@ -17,7 +17,6 @@ pipeline:
       - make ssh-server
       - make vet
       - make lint
-      # - make test
       - coverage all
       - make coverage
 
