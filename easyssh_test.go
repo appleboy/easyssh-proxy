@@ -163,7 +163,7 @@ func TestProxyClient(t *testing.T) {
 		User:     "drone-scp",
 		Port:     "22",
 		Password: "1234",
-		Proxy: defaultConfig{
+		Proxy: DefaultConfig{
 			User:     "drone-scp",
 			Server:   "localhost",
 			Port:     "22",
@@ -182,7 +182,7 @@ func TestProxyClient(t *testing.T) {
 		User:     "drone-scp",
 		Port:     "228",
 		Password: "123456",
-		Proxy: defaultConfig{
+		Proxy: DefaultConfig{
 			User:    "drone-scp",
 			Server:  "localhost",
 			Port:    "22",
@@ -200,7 +200,7 @@ func TestProxyClient(t *testing.T) {
 		User:     "drone-scp",
 		Port:     "22",
 		Password: "123456",
-		Proxy: defaultConfig{
+		Proxy: DefaultConfig{
 			User:    "drone-scp",
 			Server:  "localhost",
 			Port:    "22",
@@ -218,7 +218,7 @@ func TestProxyClient(t *testing.T) {
 		Server:  "localhost",
 		Port:    "22",
 		KeyPath: "./tests/.ssh/id_rsa",
-		Proxy: defaultConfig{
+		Proxy: DefaultConfig{
 			User:    "drone-scp",
 			Server:  "localhost",
 			Port:    "22",
@@ -237,7 +237,7 @@ func TestProxyClientSSHCommand(t *testing.T) {
 		Server:  "localhost",
 		Port:    "22",
 		KeyPath: "./tests/.ssh/id_rsa",
-		Proxy: defaultConfig{
+		Proxy: DefaultConfig{
 			User:    "drone-scp",
 			Server:  "localhost",
 			Port:    "22",

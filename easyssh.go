@@ -18,24 +18,14 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 )
 
-// MakeConfig Contains main authority information.
-// User field should be a name of user on remote server (ex. john in ssh john@example.com).
-// Server field should be a remote machine address (ex. example.com in ssh john@example.com)
-// Key is a path to private key on your local machine.
-// Port is SSH server port on remote machine.
-// Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
-// Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 type (
-	defaultConfig struct {
-		User     string
-		Server   string
-		Key      string
-		KeyPath  string
-		Port     string
-		Password string
-		Timeout  time.Duration
-	}
-
+	// MakeConfig Contains main authority information.
+	// User field should be a name of user on remote server (ex. john in ssh john@example.com).
+	// Server field should be a remote machine address (ex. example.com in ssh john@example.com)
+	// Key is a path to private key on your local machine.
+	// Port is SSH server port on remote machine.
+	// Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
+	// Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 	MakeConfig struct {
 		User     string
 		Server   string
@@ -44,7 +34,18 @@ type (
 		Port     string
 		Password string
 		Timeout  time.Duration
-		Proxy    defaultConfig
+		Proxy    DefaultConfig
+	}
+
+	// DefaultConfig for ssh proxy config
+	DefaultConfig struct {
+		User     string
+		Server   string
+		Key      string
+		KeyPath  string
+		Port     string
+		Password string
+		Timeout  time.Duration
 	}
 )
 
@@ -64,7 +65,7 @@ func getKeyFile(keypath string) (ssh.Signer, error) {
 	return pubkey, nil
 }
 
-func getSSHConfig(config defaultConfig) *ssh.ClientConfig {
+func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	// auths holds the detected ssh auth methods
 	auths := []ssh.AuthMethod{}
 
@@ -101,7 +102,7 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 	var client *ssh.Client
 	var err error
 
-	targetConfig := getSSHConfig(defaultConfig{
+	targetConfig := getSSHConfig(DefaultConfig{
 		User:     ssh_conf.User,
 		Key:      ssh_conf.Key,
 		KeyPath:  ssh_conf.KeyPath,
@@ -111,7 +112,7 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 
 	// Enable proxy command
 	if ssh_conf.Proxy.Server != "" {
-		proxyConfig := getSSHConfig(defaultConfig{
+		proxyConfig := getSSHConfig(DefaultConfig{
 			User:     ssh_conf.Proxy.User,
 			Key:      ssh_conf.Proxy.Key,
 			KeyPath:  ssh_conf.Proxy.KeyPath,
