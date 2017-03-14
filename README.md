@@ -25,3 +25,98 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
      +--------+       +----------+      +-----------+
      192.168.1.5       121.1.2.3         10.10.29.68
 ```
+
+## Usage:
+
+You can see `ssh`, `scp`, `ProxyCommand` on `examples` folder.
+
+### ssh
+
+See [example/ssh/ssh.go](./example/ssh/ssh.go)
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/appleboy/easyssh-proxy"
+)
+
+func main() {
+	// Create MakeConfig instance with remote username, server address and path to private key.
+	ssh := &easyssh.MakeConfig{
+		User:   "appleboy",
+		Server: "example.com",
+		// Optional key or Password without either we try to contact your agent SOCKET
+		//Password: "password",
+		Key:     "/.ssh/id_rsa",
+		Port:    "22",
+		Timeout: 60,
+	}
+
+	// Call Run method with command you want to run on remote server.
+	stdout, stderr, done, err := ssh.Run("ls -al", 60)
+	// Handle errors
+	if err != nil {
+		panic("Can't run remote command: " + err.Error())
+	} else {
+		fmt.Println("don is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
+	}
+
+}
+```
+
+### scp
+
+See [example/scp/scp.go](./example/scp/scp.go)
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/appleboy/easyssh-proxy"
+)
+
+func main() {
+	// Create MakeConfig instance with remote username, server address and path to private key.
+	ssh := &easyssh.MakeConfig{
+		User:     "appleboy",
+		Server:   "example.com",
+		Password: "123qwe",
+		Port:     "22",
+	}
+
+	// Call Scp method with file you want to upload to remote server.
+	// Please make sure the `tmp` floder exists.
+	err := ssh.Scp("/root/source.csv", "/tmp/target.csv")
+
+	// Handle errors
+	if err != nil {
+		panic("Can't run remote command: " + err.Error())
+	} else {
+		fmt.Println("success")
+	}
+}
+```
+
+### SSH ProxyCommand
+
+See [example/proxy/proxy.go](./example/proxy/proxy.go)
+
+```go
+	ssh := &easyssh.MakeConfig{
+		User:    "drone-scp",
+		Server:  "localhost",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Proxy: easyssh.DefaultConfig{
+			User:    "drone-scp",
+			Server:  "localhost",
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+		},
+	}
+```
