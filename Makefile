@@ -1,4 +1,4 @@
-.PHONY: test drone-ssh build fmt vet errcheck lint install update release-dirs release-build release-copy release-check release coverage
+.PHONY: test drone-ssh build fmt vet errcheck lint install update release-dirs release-build release-copy release-check release coverage embedmd
 
 PACKAGES ?= $(shell go list ./... | grep -v /vendor/)
 
