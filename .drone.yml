@@ -15,6 +15,7 @@ pipeline:
       GOPATH: /srv/app
     commands:
       - export PATH=$PATH:/srv/app/bin
+      - make install
       - make vet
       - make lint
       - make embedmd
