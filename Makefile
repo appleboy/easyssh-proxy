@@ -4,6 +4,12 @@ PACKAGES ?= $(shell go list ./... | grep -v /vendor/)
 
 all: build
 
+install:
+	@hash govendor > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
+		go get -u github.com/kardianos/govendor; \
+	fi
+	govendor sync
+
 fmt:
 	find . -name "*.go" -type f -not -path "./vendor/*" | xargs gofmt -s -w
 
