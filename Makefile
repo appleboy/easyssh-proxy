@@ -1,8 +1,8 @@
-.PHONY: test drone-ssh build fmt vet errcheck lint install update release-dirs release-build release-copy release-check release coverage embedmd
+.PHONY: test drone-ssh fmt vet errcheck lint install update coverage embedmd
 
 PACKAGES ?= $(shell go list ./... | grep -v /vendor/)
 
-all: build
+all: install lint
 
 install:
 	@hash govendor > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
