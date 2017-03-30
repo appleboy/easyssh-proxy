@@ -40,6 +40,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/appleboy/easyssh-proxy"
 )
@@ -53,7 +54,7 @@ func main() {
 		//Password: "password",
 		Key:     "/.ssh/id_rsa",
 		Port:    "22",
-		Timeout: 60,
+		Timeout: 60 * time.Second,
 	}
 
 	// Call Run method with command you want to run on remote server.

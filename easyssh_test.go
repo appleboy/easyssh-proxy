@@ -5,6 +5,7 @@ import (
 	"os/user"
 	"path"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -258,6 +259,7 @@ func TestSCPCommandWithPassword(t *testing.T) {
 		User:     "drone-scp",
 		Port:     "22",
 		Password: "1234",
+		Timeout:  60 * time.Second,
 	}
 
 	err := ssh.Scp("./tests/b.txt", "b.txt")
