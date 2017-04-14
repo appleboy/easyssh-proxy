@@ -91,9 +91,10 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	}
 
 	return &ssh.ClientConfig{
-		Timeout: config.Timeout,
-		User:    config.User,
-		Auth:    auths,
+		Timeout:         config.Timeout,
+		User:            config.User,
+		Auth:            auths,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 }
 
