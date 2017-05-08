@@ -15,6 +15,7 @@ pipeline:
     environment:
       TAGS: netgo
       GOPATH: /srv/app
+    secrets: [ codecov_token ]
     commands:
       - export PATH=$PATH:/srv/app/bin
       - make install

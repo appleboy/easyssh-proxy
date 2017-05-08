@@ -266,17 +266,20 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	}
 
 	go func() {
-		w, _ := session.StdinPipe()
+		w, err := session.StdinPipe()
+
+		if err != nil {
+			return
+		}
+		defer w.Close()
 
 		fmt.Fprintln(w, "C0644", srcStat.Size(), targetFile)
 
 		if srcStat.Size() > 0 {
 			io.Copy(w, src)
 			fmt.Fprint(w, "\x00")
-			w.Close()
 		} else {
 			fmt.Fprint(w, "\x00")
-			w.Close()
 		}
 	}()
 
