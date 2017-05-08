@@ -161,7 +161,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 	if err != nil {
 		return stdout, stderr, done, err
 	}
-	defer session.Close()
+	// defer session.Close()
 	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
@@ -215,10 +215,10 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 			stderrChan <- "Run Command Timeout!"
 			done <- false
 		}
-
+		err = session.Wait()
+		session.Close()
 	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, done)
 
-	err = session.Wait()
 	return stdoutChan, stderrChan, done, err
 }
 
