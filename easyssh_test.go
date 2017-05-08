@@ -66,6 +66,13 @@ func TestRunCommand(t *testing.T) {
 	assert.Equal(t, "Run Command Timeout!\n", errStr)
 	assert.False(t, isTimeout)
 	assert.NoError(t, err)
+
+	// test exit code
+	outStr, errStr, isTimeout, err = ssh.Run("exit 1", 10)
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "Run Command Timeout!\n", errStr)
+	assert.False(t, isTimeout)
+	assert.NoError(t, err)
 }
 
 func TestSCPCommand(t *testing.T) {

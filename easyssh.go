@@ -161,6 +161,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 	if err != nil {
 		return stdout, stderr, done, err
 	}
+	defer session.Close()
 	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
@@ -170,10 +171,14 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 	if err != nil {
 		return stdout, stderr, done, err
 	}
+	err = session.Start(command)
+	if err != nil {
+		return stdout, stderr, done, err
+	}
+
 	// combine outputs, create a line-by-line scanner
 	stdoutReader := io.MultiReader(outReader)
 	stderrReader := io.MultiReader(errReader)
-	err = session.Start(command)
 	stdoutScanner := bufio.NewScanner(stdoutReader)
 	stderrScanner := bufio.NewScanner(stderrReader)
 	// continuously send the command's output over the channel
@@ -211,8 +216,9 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 			done <- false
 		}
 
-		session.Close()
 	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, done)
+
+	err = session.Wait()
 	return stdoutChan, stderrChan, done, err
 }
 
