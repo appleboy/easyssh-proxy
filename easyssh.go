@@ -266,10 +266,10 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	}
 
 	go func() {
-		w, stdErr := session.StdinPipe()
+		w, err := session.StdinPipe()
 
-		if stdErr != nil {
-			return stdErr
+		if err != nil {
+			return
 		}
 		defer w.Close()
 
