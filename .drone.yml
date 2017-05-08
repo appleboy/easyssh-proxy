@@ -2,11 +2,13 @@ workspace:
   base: /srv/app
   path: src/github.com/appleboy/easyssh-proxy
 
-pipeline:
-  clone:
+clone:
+  git:
     image: plugins/git
+    depth: 50
     tags: true
 
+pipeline:
   test:
     image: appleboy/golang-testing
     pull: true
