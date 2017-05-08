@@ -63,7 +63,8 @@ func TestRunCommand(t *testing.T) {
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
-	assert.NoError(t, err)
+	// Process exited with status 127
+	assert.Error(t, err)
 
 	// error message: Run Command Timeout
 	outStr, errStr, isTimeout, err = ssh.Run("sleep 5", 1)
@@ -83,9 +84,10 @@ func TestRunCommand(t *testing.T) {
 	fmt.Println(isTimeout)
 	fmt.Println(err)
 	assert.Equal(t, "", outStr)
-	assert.Equal(t, "Run Command Timeout!\n", errStr)
-	assert.False(t, isTimeout)
-	assert.NoError(t, err)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	// Process exited with status 1
+	assert.Error(t, err)
 }
 
 func TestSCPCommand(t *testing.T) {
