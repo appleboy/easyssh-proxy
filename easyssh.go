@@ -217,8 +217,10 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 		}
 		err = session.Wait()
 		session.Close()
+		fmt.Println("close session")
 	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, done)
 
+	fmt.Println("return value")
 	return stdoutChan, stderrChan, done, err
 }
 
