@@ -155,25 +155,25 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 // Stream returns one channel that combines the stdout and stderr of the command
 // as it is run on the remote machine, and another that sends true when the
 // command is done. The sessions and channels will then be closed.
-func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan string, stderr chan string, done chan bool, err error) {
+func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan string, stderr chan string, done chan bool, errChan chan error, err error) {
 	// connect to remote host
 	session, err := ssh_conf.connect()
 	if err != nil {
-		return stdout, stderr, done, err
+		return stdout, stderr, done, errChan, err
 	}
 	// defer session.Close()
 	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
-		return stdout, stderr, done, err
+		return stdout, stderr, done, errChan, err
 	}
 	errReader, err := session.StderrPipe()
 	if err != nil {
-		return stdout, stderr, done, err
+		return stdout, stderr, done, errChan, err
 	}
 	err = session.Start(command)
 	if err != nil {
-		return stdout, stderr, done, err
+		return stdout, stderr, done, errChan, err
 	}
 
 	// combine outputs, create a line-by-line scanner
@@ -185,11 +185,14 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 	stdoutChan := make(chan string)
 	stderrChan := make(chan string)
 	done = make(chan bool)
+	errChan = make(chan error)
 
-	go func(stdoutScanner, stderrScanner *bufio.Scanner, stdoutChan, stderrChan chan string, done chan bool) {
+	go func(stdoutScanner, stderrScanner *bufio.Scanner, stdoutChan, stderrChan chan string, done chan bool, errChan chan error) {
 		defer close(stdoutChan)
 		defer close(stderrChan)
 		defer close(done)
+		defer close(errChan)
+		defer session.Close()
 
 		timeoutChan := time.After(time.Duration(timeout) * time.Second)
 		res := make(chan bool, 1)
@@ -209,24 +212,22 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 		case <-res:
 			stdoutChan <- ""
 			stderrChan <- ""
+			errChan <- session.Wait()
 			done <- true
 		case <-timeoutChan:
 			stdoutChan <- ""
 			stderrChan <- "Run Command Timeout!"
+			errChan <- nil
 			done <- false
 		}
-		err = session.Wait()
-		session.Close()
-		fmt.Println("close session")
-	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, done)
+	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, done, errChan)
 
-	fmt.Println("return value")
-	return stdoutChan, stderrChan, done, err
+	return stdoutChan, stderrChan, done, errChan, err
 }
 
 // Run command on remote machine and returns its stdout as a string
 func (ssh_conf *MakeConfig) Run(command string, timeout int) (outStr string, errStr string, isTimeout bool, err error) {
-	stdoutChan, stderrChan, doneChan, err := ssh_conf.Stream(command, timeout)
+	stdoutChan, stderrChan, doneChan, errChan, err := ssh_conf.Stream(command, timeout)
 	if err != nil {
 		return outStr, errStr, isTimeout, err
 	}
@@ -244,6 +245,7 @@ func (ssh_conf *MakeConfig) Run(command string, timeout int) (outStr string, err
 			if errline != "" {
 				errStr += errline + "\n"
 			}
+		case err = <-errChan:
 		}
 	}
 	// return the concatenation of all signals from the output channel

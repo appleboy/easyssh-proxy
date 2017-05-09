@@ -1,7 +1,6 @@
 package easyssh
 
 import (
-	"fmt"
 	"os"
 	"os/user"
 	"path"
@@ -56,22 +55,14 @@ func TestRunCommand(t *testing.T) {
 
 	// error message: command not found
 	outStr, errStr, isTimeout, err = ssh.Run("whoami1234", 10)
-	fmt.Println(outStr)
-	fmt.Println(errStr)
-	fmt.Println(isTimeout)
-	fmt.Println(err)
 	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Equal(t, "bash: whoami1234: command not found\n", errStr)
 	assert.True(t, isTimeout)
 	// Process exited with status 127
 	assert.Error(t, err)
 
 	// error message: Run Command Timeout
 	outStr, errStr, isTimeout, err = ssh.Run("sleep 5", 1)
-	fmt.Println(outStr)
-	fmt.Println(errStr)
-	fmt.Println(isTimeout)
-	fmt.Println(err)
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "Run Command Timeout!\n", errStr)
 	assert.False(t, isTimeout)
@@ -79,10 +70,6 @@ func TestRunCommand(t *testing.T) {
 
 	// test exit code
 	outStr, errStr, isTimeout, err = ssh.Run("exit 1", 10)
-	fmt.Println(outStr)
-	fmt.Println(errStr)
-	fmt.Println(isTimeout)
-	fmt.Println(err)
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
