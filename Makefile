@@ -1,8 +1,7 @@
 .PHONY: test drone-ssh fmt vet errcheck lint install update coverage embedmd
 
 GOFMT ?= gofmt "-s"
-
-GOFILES := find . -name "*.go" -type f -not -path "./vendor/*"
+GOFILES := $(shell find . -name "*.go" -type f -not -path "./vendor/*")
 PACKAGES ?= $(shell go list ./... | grep -v /vendor/)
 
 all: install lint
@@ -14,16 +13,17 @@ install:
 	govendor sync
 
 fmt:
-	$(GOFILES) | xargs $(GOFMT) -w
+	$(GOFMT) -w $(GOFILES)
 
 .PHONY: fmt-check
 fmt-check:
 	# get all go files and run go fmt on them
-	@files=$$($(GOFILES) | xargs $(GOFMT) -l); if [ -n "$$files" ]; then \
+	@diff=$$($(GOFMT) -d $(GOFILES)); \
+	if [ -n "$$diff" ]; then \
 		echo "Please run 'make fmt' and commit the result:"; \
-		echo "$${files}"; \
+		echo "$${diff}"; \
 		exit 1; \
-		fi;
+	fi;
 
 vet:
 	go vet $(PACKAGES)
