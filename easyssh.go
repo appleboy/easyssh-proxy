@@ -210,12 +210,9 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan str
 
 		select {
 		case <-res:
-			stdoutChan <- ""
-			stderrChan <- ""
 			errChan <- session.Wait()
 			done <- true
 		case <-timeoutChan:
-			stdoutChan <- ""
 			stderrChan <- "Run Command Timeout!"
 			errChan <- nil
 			done <- false
