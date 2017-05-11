@@ -86,8 +86,9 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	}
 
 	if config.Key != "" {
-		signer, _ := ssh.ParsePrivateKey([]byte(config.Key))
-		auths = append(auths, ssh.PublicKeys(signer))
+		if signer, err := ssh.ParsePrivateKey([]byte(config.Key)); err == nil {
+			auths = append(auths, ssh.PublicKeys(signer))
+		}
 	}
 
 	return &ssh.ClientConfig{

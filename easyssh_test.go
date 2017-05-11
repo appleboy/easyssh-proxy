@@ -284,3 +284,19 @@ func TestSCPCommandWithPassword(t *testing.T) {
 		t.Fatalf("SCP-error: %v", err)
 	}
 }
+
+func TestWrongRawKey(t *testing.T) {
+	// wrong key
+	ssh := &MakeConfig{
+		Server: "localhost",
+		User:   "drone-scp",
+		Port:   "22",
+		Key:    "appleboy",
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "", errStr)
+	assert.False(t, isTimeout)
+	assert.Error(t, err)
+}
