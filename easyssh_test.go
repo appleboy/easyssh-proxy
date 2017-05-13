@@ -312,7 +312,7 @@ func TestExitCode(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir a;mkdir a;echo 2", 10)
 	assert.Equal(t, "1\n", outStr)
-	assert.Equal(t, "mkdir: a: File exists\n", errStr)
+	assert.Equal(t, "mkdir: can't create directory 'a': File exists\n", errStr)
 	assert.True(t, isTimeout)
 	assert.Error(t, err)
 }
