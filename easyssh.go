@@ -156,7 +156,7 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 // Stream returns one channel that combines the stdout and stderr of the command
 // as it is run on the remote machine, and another that sends true when the
 // command is done. The sessions and channels will then be closed.
-func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout chan string, stderr chan string, done chan bool, errChan chan error, err error) {
+func (ssh_conf *MakeConfig) Stream(command string, timeout int) (stdout <-chan string, stderr <-chan string, done chan bool, errChan chan error, err error) {
 	// connect to remote host
 	session, err := ssh_conf.connect()
 	if err != nil {
@@ -230,11 +230,11 @@ func (ssh_conf *MakeConfig) Run(command string, timeout int) (outStr string, err
 		return outStr, errStr, isTimeout, err
 	}
 	// read from the output channel until the done signal is passed
-	stillGoing := true
-	for stillGoing {
+loop:
+	for {
 		select {
 		case isTimeout = <-doneChan:
-			stillGoing = false
+			break loop
 		case outline := <-stdoutChan:
 			if outline != "" {
 				outStr += outline + "\n"
