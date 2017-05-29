@@ -57,7 +57,13 @@ func main() {
 		Server: "example.com",
 		// Optional key or Password without either we try to contact your agent SOCKET
 		//Password: "password",
-		Key:     "/.ssh/id_rsa",
+		// Paste your source content of private key
+		// Key: `-----BEGIN RSA PRIVATE KEY-----
+		// MIIEpAIBAAKCAQEA4e2D/qPN08pzTac+a8ZmlP1ziJOXk45CynMPtva0rtK/RB26
+		// 7XC9wlRna4b3Ln8ew3q1ZcBjXwD4ppbTlmwAfQIaZTGJUgQbdsO9YA==
+		// -----END RSA PRIVATE KEY-----
+		// `,
+		KeyPath: "/Users/username/.ssh/id_rsa",
 		Port:    "22",
 		Timeout: 60 * time.Second,
 	}
