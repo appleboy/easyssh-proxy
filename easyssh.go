@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"path/filepath"
@@ -80,13 +81,17 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	}
 
 	if config.KeyPath != "" {
-		if pubkey, err := getKeyFile(config.KeyPath); err == nil {
+		if pubkey, err := getKeyFile(config.KeyPath); err != nil {
+			log.Printf("getKeyFile: %v\n", err)
+		} else {
 			auths = append(auths, ssh.PublicKeys(pubkey))
 		}
 	}
 
 	if config.Key != "" {
-		if signer, err := ssh.ParsePrivateKey([]byte(config.Key)); err == nil {
+		if signer, err := ssh.ParsePrivateKey([]byte(config.Key)); err != nil {
+			log.Printf("ssh.ParsePrivateKey: %v\n", err)
+		} else {
 			auths = append(auths, ssh.PublicKeys(signer))
 		}
 	}
