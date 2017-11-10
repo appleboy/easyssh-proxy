@@ -297,9 +297,5 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 		}
 	}()
 
-	if err := session.Run(fmt.Sprintf("scp -tr %s", etargetFile)); err != nil {
-		return err
-	}
-
-	return nil
+	return session.Run(fmt.Sprintf("scp -tr %s", etargetFile))
 }
