@@ -104,8 +104,8 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	}
 }
 
-// connect to remote server using MakeConfig struct and returns *ssh.Session
-func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
+// Connect to remote server using MakeConfig struct and returns *ssh.Session
+func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 	var client *ssh.Client
 	var err error
 
@@ -168,13 +168,13 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (<-chan string, 
 	doneChan := make(chan bool)
 	errChan := make(chan error)
 
-	// connect to remote host
-	session, err := ssh_conf.connect()
+	// Connect to remote host
+	session, err := ssh_conf.Connect()
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 	// defer session.Close()
-	// connect to both outputs (they are of type io.Reader)
+	// Connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
@@ -258,7 +258,7 @@ loop:
 
 // Scp uploads sourceFile to remote machine like native scp console app.
 func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
-	session, err := ssh_conf.connect()
+	session, err := ssh_conf.Connect()
 
 	if err != nil {
 		return err
@@ -297,9 +297,5 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 		}
 	}()
 
-	if err := session.Run(fmt.Sprintf("scp -tr %s", etargetFile)); err != nil {
-		return err
-	}
-
-	return nil
+	return session.Run(fmt.Sprintf("scp -tr %s", etargetFile))
 }

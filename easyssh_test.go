@@ -183,7 +183,7 @@ func TestProxyClient(t *testing.T) {
 
 	// password of proxy client is incorrect.
 	// can't connect proxy server
-	session, err := ssh.connect()
+	session, err := ssh.Connect()
 	assert.Nil(t, session)
 	assert.Error(t, err)
 
@@ -201,7 +201,7 @@ func TestProxyClient(t *testing.T) {
 	}
 
 	// proxy client can't dial to target server
-	session, err = ssh.connect()
+	session, err = ssh.Connect()
 	assert.Nil(t, session)
 	assert.Error(t, err)
 
@@ -219,7 +219,7 @@ func TestProxyClient(t *testing.T) {
 	}
 
 	// proxy client can't create new client connection of target
-	session, err = ssh.connect()
+	session, err = ssh.Connect()
 	assert.Nil(t, session)
 	assert.Error(t, err)
 
@@ -236,7 +236,7 @@ func TestProxyClient(t *testing.T) {
 		},
 	}
 
-	session, err = ssh.connect()
+	session, err = ssh.Connect()
 	assert.NotNil(t, session)
 	assert.NoError(t, err)
 }
