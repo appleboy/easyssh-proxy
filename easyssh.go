@@ -104,7 +104,7 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	}
 }
 
-// connect to remote server using MakeConfig struct and returns *ssh.Session
+// Connect to remote server using MakeConfig struct and returns *ssh.Session
 func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 	var client *ssh.Client
 	var err error
