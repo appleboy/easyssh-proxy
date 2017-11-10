@@ -1,6 +1,6 @@
 workspace:
-  base: /srv/app
-  path: src/github.com/appleboy/easyssh-proxy
+  base: /go/src
+  path: github.com/appleboy/easyssh-proxy
 
 clone:
   git:
@@ -12,12 +12,8 @@ pipeline:
   test:
     image: appleboy/golang-testing
     pull: true
-    environment:
-      TAGS: netgo
-      GOPATH: /srv/app
     secrets: [ codecov_token ]
     commands:
-      - export PATH=$PATH:/srv/app/bin
       - make install
       - make vet
       - make lint
