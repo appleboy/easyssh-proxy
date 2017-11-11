@@ -161,20 +161,20 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 // Stream returns one channel that combines the stdout and stderr of the command
 // as it is run on the remote machine, and another that sends true when the
 // command is done. The sessions and channels will then be closed.
-func (ssh_conf *MakeConfig) Stream(command string, timeout int) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
+func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
 	// continuously send the command's output over the channel
 	stdoutChan := make(chan string)
 	stderrChan := make(chan string)
 	doneChan := make(chan bool)
 	errChan := make(chan error)
 
-	// Connect to remote host
+	// connect to remote host
 	session, err := ssh_conf.Connect()
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 	// defer session.Close()
-	// Connect to both outputs (they are of type io.Reader)
+	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
@@ -201,7 +201,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (<-chan string, 
 		defer close(errChan)
 		defer session.Close()
 
-		timeoutChan := time.After(time.Duration(timeout) * time.Second)
+		timeoutChan := time.After(timeout * time.Second)
 		res := make(chan bool, 1)
 
 		go func() {
@@ -230,7 +230,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout int) (<-chan string, 
 }
 
 // Run command on remote machine and returns its stdout as a string
-func (ssh_conf *MakeConfig) Run(command string, timeout int) (outStr string, errStr string, isTimeout bool, err error) {
+func (ssh_conf *MakeConfig) Run(command string, timeout time.Duration) (outStr string, errStr string, isTimeout bool, err error) {
 	stdoutChan, stderrChan, doneChan, errChan, err := ssh_conf.Stream(command, timeout)
 	if err != nil {
 		return outStr, errStr, isTimeout, err
