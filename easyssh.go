@@ -74,12 +74,6 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 	if config.Password != "" {
 		auths = append(auths, ssh.Password(config.Password))
 	}
-
-	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
-		auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers))
-		defer sshAgent.Close()
-	}
-
 	if config.KeyPath != "" {
 		if pubkey, err := getKeyFile(config.KeyPath); err != nil {
 			log.Printf("getKeyFile: %v\n", err)
@@ -94,6 +88,11 @@ func getSSHConfig(config DefaultConfig) *ssh.ClientConfig {
 		} else {
 			auths = append(auths, ssh.PublicKeys(signer))
 		}
+	}
+
+	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
+		auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers))
+		defer sshAgent.Close()
 	}
 
 	return &ssh.ClientConfig{
