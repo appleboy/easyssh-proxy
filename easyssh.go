@@ -160,7 +160,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 // Stream returns one channel that combines the stdout and stderr of the command
 // as it is run on the remote machine, and another that sends true when the
 // command is done. The sessions and channels will then be closed.
-func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
+func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration, continueOnError ...bool) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
 	// continuously send the command's output over the channel
 	stdoutChan := make(chan string)
 	stderrChan := make(chan string)
@@ -182,7 +182,14 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-cha
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
-	err = session.Start(command)
+	if len(continueOnError) == 0 {
+		continueOnError = []bool{false}
+	}
+	if !continueOnError[0] {
+		err = session.Run(command)
+	} else {
+		err = session.Start(command)
+	}
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
