@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -201,17 +202,28 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-cha
 		defer session.Close()
 
 		timeoutChan := time.After(timeout * time.Second)
-		res := make(chan bool, 1)
+		res := make(chan struct{}, 1)
+		var resWg sync.WaitGroup
+		resWg.Add(2)
 
 		go func() {
 			for stdoutScanner.Scan() {
 				stdoutChan <- stdoutScanner.Text()
 			}
+			resWg.Done()
+		}()
+
+		go func() {
 			for stderrScanner.Scan() {
 				stderrChan <- stderrScanner.Text()
 			}
+			resWg.Done()
+		}()
+
+		go func() {
+			resWg.Wait()
 			// close all of our open resources
-			res <- true
+			res <- struct{}{}
 		}()
 
 		select {
