@@ -69,7 +69,7 @@ clean:
 	rm -rf coverage.txt $(EXECUTABLE) $(DIST) vendor
 
 ssh-server:
-	adduser -h /home/drone-scp -s /bin/bash -D -S drone-scp
+	adduser -h /home/drone-scp -s /bin/sh -D -S drone-scp
 	echo drone-scp:1234 | chpasswd
 	mkdir -p /home/drone-scp/.ssh
 	chmod 700 /home/drone-scp/.ssh

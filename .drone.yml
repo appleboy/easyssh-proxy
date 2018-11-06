@@ -9,21 +9,22 @@ clone:
     tags: true
 
 pipeline:
-  # test_vendor:
-  #   image: appleboy/golang-testing
-  #   pull: true
-  #   group: testing
-  #   secrets: [ codecov_token ]
-  #   commands:
-  #     - make install
-  #     - make vet
-  #     - make lint
-  #     - make embedmd
-  #     - make ssh-server
-  #     - coverage all
-  #     - make coverage
-  #   when:
-  #     event: [ push, tag, pull_request ]
+  test_vendor:
+    image: appleboy/golang-testing
+    pull: true
+    group: testing
+    secrets: [ codecov_token ]
+    commands:
+      - make install
+      - make vet
+      - make lint
+      - make embedmd
+      - make ssh-server
+      - coverage all
+      - make coverage
+    when:
+      event: [ push, tag, pull_request ]
+
   test_mod:
     image: golang:1.11-alpine3.8
     pull: true
