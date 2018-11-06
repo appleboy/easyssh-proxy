@@ -31,7 +31,7 @@ pipeline:
     environment:
       - GO111MODULE=on
     commands:
-      - apk add --no-cache ca-certificates make gcc build-base zlib-dev ucl-devls
+      - apk add --no-cache ca-certificates make gcc build-base zlib-dev ucl-dev
       - make ssh-server
       - make test
     when:
