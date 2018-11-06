@@ -26,7 +26,7 @@ pipeline:
       event: [ push, tag, pull_request ]
 
   test_mod:
-    image: golang:1.11
+    image: golang:1.11-alpine3.8
     pull: true
     group: testing
     environment:
