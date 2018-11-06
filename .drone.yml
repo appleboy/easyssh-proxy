@@ -9,7 +9,7 @@ clone:
     tags: true
 
 pipeline:
-  test:
+  test_vendor:
     image: appleboy/golang-testing
     pull: true
     group: testing
@@ -25,7 +25,7 @@ pipeline:
     when:
       event: [ push, tag, pull_request ]
 
-  test:
+  test_mod:
     image: golang:1.11
     pull: true
     group: testing
@@ -36,11 +36,3 @@ pipeline:
       - make test
     when:
       event: [ push, tag, pull_request ]
-
-  facebook:
-    image: appleboy/drone-facebook
-    pull: true
-    to: 1234973386524610
-    secrets: [ fb_page_token, fb_verify_token ]
-    when:
-      status: [ changed, failure ]
