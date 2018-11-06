@@ -82,7 +82,7 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 	}
 	if config.KeyPath != "" {
 		if pubkey, err := getKeyFile(config.KeyPath); err != nil {
-			log.Printf("getKeyFile: %v\n", err)
+			log.Printf("getKeyFile error: %v\n", err)
 		} else {
 			auths = append(auths, ssh.PublicKeys(pubkey))
 		}
