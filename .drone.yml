@@ -12,6 +12,7 @@ pipeline:
   test:
     image: appleboy/golang-testing
     pull: true
+    group: testing
     secrets: [ codecov_token ]
     commands:
       - make install
@@ -21,7 +22,18 @@ pipeline:
       - make ssh-server
       - coverage all
       - make coverage
+    when:
+      event: [ push, tag, pull_request ]
 
+  test:
+    image: golang:1.11
+    pull: true
+    group: testing
+    environment:
+      - GO111MODULE=on
+    commands:
+      - make ssh-server
+      - make test
     when:
       event: [ push, tag, pull_request ]
 
