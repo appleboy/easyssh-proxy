@@ -47,14 +47,14 @@ func TestRunCommand(t *testing.T) {
 		KeyPath: "./tests/.ssh/id_rsa",
 	}
 
-	outStr, errStr, isTimeout, err = ssh.Run("whoami", 10)
+	outStr, errStr, isTimeout, err = ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 
 	// error message: command not found
-	outStr, errStr, isTimeout, err = ssh.Run("whoami1234", 10)
+	outStr, errStr, isTimeout, err = ssh.Run("whoami1234")
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "sh: whoami1234: not found\n", errStr)
 	assert.True(t, isTimeout)
@@ -62,14 +62,14 @@ func TestRunCommand(t *testing.T) {
 	assert.Error(t, err)
 
 	// error message: Run Command Timeout
-	outStr, errStr, isTimeout, err = ssh.Run("sleep 5", 1)
+	outStr, errStr, isTimeout, err = ssh.Run("sleep 2", 1*time.Second)
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "Run Command Timeout!\n", errStr)
 	assert.False(t, isTimeout)
 	assert.NoError(t, err)
 
 	// test exit code
-	outStr, errStr, isTimeout, err = ssh.Run("exit 1", 10)
+	outStr, errStr, isTimeout, err = ssh.Run("exit 1")
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
@@ -255,7 +255,7 @@ func TestProxyClientSSHCommand(t *testing.T) {
 		},
 	}
 
-	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	outStr, errStr, isTimeout, err := ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
@@ -294,7 +294,7 @@ func TestWrongRawKey(t *testing.T) {
 		Key:    "appleboy",
 	}
 
-	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
+	outStr, errStr, isTimeout, err := ssh.Run("whoami")
 	assert.Equal(t, "", outStr)
 	assert.Equal(t, "", errStr)
 	assert.False(t, isTimeout)
@@ -310,7 +310,7 @@ func TestExitCode(t *testing.T) {
 		Timeout: 60 * time.Second,
 	}
 
-	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir a;mkdir a;echo 2", 10)
+	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir a;mkdir a;echo 2")
 	assert.Equal(t, "1\n", outStr)
 	assert.Equal(t, "mkdir: can't create directory 'a': File exists\n", errStr)
 	assert.True(t, isTimeout)
