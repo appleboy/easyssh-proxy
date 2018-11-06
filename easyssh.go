@@ -211,7 +211,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-cha
 		defer close(errChan)
 		defer session.Close()
 
-		timeoutChan := time.After(timeout * time.Second)
+		timeoutChan := time.After(timeout)
 		res := make(chan struct{}, 1)
 		var resWg sync.WaitGroup
 		resWg.Add(2)
