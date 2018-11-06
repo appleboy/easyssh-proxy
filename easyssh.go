@@ -20,6 +20,8 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 )
 
+var defaultTimeout = 60 * time.Second
+
 type (
 	// MakeConfig Contains main authority information.
 	// User field should be a name of user on remote server (ex. john in ssh john@example.com).
@@ -171,7 +173,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 // Stream returns one channel that combines the stdout and stderr of the command
 // as it is run on the remote machine, and another that sends true when the
 // command is done. The sessions and channels will then be closed.
-func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
+func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
 	// continuously send the command's output over the channel
 	stdoutChan := make(chan string)
 	stderrChan := make(chan string)
@@ -211,7 +213,12 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-cha
 		defer close(errChan)
 		defer session.Close()
 
-		timeoutChan := time.After(timeout)
+		// default timeout value
+		executeTimeout := defaultTimeout
+		if len(timeout) > 0 {
+			executeTimeout = timeout[0]
+		}
+		timeoutChan := time.After(executeTimeout)
 		res := make(chan struct{}, 1)
 		var resWg sync.WaitGroup
 		resWg.Add(2)
@@ -251,8 +258,8 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout time.Duration) (<-cha
 }
 
 // Run command on remote machine and returns its stdout as a string
-func (ssh_conf *MakeConfig) Run(command string, timeout time.Duration) (outStr string, errStr string, isTimeout bool, err error) {
-	stdoutChan, stderrChan, doneChan, errChan, err := ssh_conf.Stream(command, timeout)
+func (ssh_conf *MakeConfig) Run(command string, timeout ...time.Duration) (outStr string, errStr string, isTimeout bool, err error) {
+	stdoutChan, stderrChan, doneChan, errChan, err := ssh_conf.Stream(command, timeout...)
 	if err != nil {
 		return outStr, errStr, isTimeout, err
 	}
