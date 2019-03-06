@@ -40,6 +40,17 @@ steps:
   - name: gopath
     path: /go
 
+- name: embedmd
+  pull: always
+  image: golang:1.12
+  commands:
+  - make embedmd
+  environment:
+    GO111MODULE: on
+  volumes:
+  - name: gopath
+    path: /go
+
 - name: test
   pull: always
   image: golang:1.12-alpine
