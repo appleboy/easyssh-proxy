@@ -56,7 +56,7 @@ func TestRunCommand(t *testing.T) {
 	// error message: command not found
 	outStr, errStr, isTimeout, err = ssh.Run("whoami1234")
 	assert.Equal(t, "", outStr)
-	assert.Equal(t, "sh: whoami1234: not found\n", errStr)
+	assert.Equal(t, "bash: whoami1234: command not found\n", errStr)
 	assert.True(t, isTimeout)
 	// Process exited with status 127
 	assert.Error(t, err)
