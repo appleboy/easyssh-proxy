@@ -24,6 +24,3 @@ _testmain.go
 *.prof
 
 coverage.txt
-.cover
-vendor/*
-!vendor/vendor.json

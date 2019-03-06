@@ -1,39 +1,67 @@
-workspace:
-  base: /go/src
-  path: github.com/appleboy/easyssh-proxy
+---
+kind: pipeline
+name: testing
 
-clone:
-  git:
-    image: plugins/git
-    depth: 50
-    tags: true
+platform:
+  os: linux
+  arch: amd64
 
-pipeline:
-  test_vendor:
-    image: appleboy/golang-testing
-    pull: true
-    group: testing
-    secrets: [ codecov_token ]
-    commands:
-      - make install
-      - make vet
-      - make lint
-      - make embedmd
-      - make ssh-server
-      - coverage all
-      - make coverage
-    when:
-      event: [ push, tag, pull_request ]
+steps:
+- name: vet
+  pull: always
+  image: golang:1.12
+  commands:
+  - make vet
+  environment:
+    GO111MODULE: on
+  volumes:
+  - name: gopath
+    path: /go
 
-  test_mod:
-    image: golang:1.11-alpine3.8
-    pull: true
-    group: testing
-    environment:
-      - GO111MODULE=on
-    commands:
-      - apk add --no-cache git ca-certificates make gcc build-base zlib-dev ucl-dev
-      - make ssh-server
-      - make test
-    when:
-      event: [ push, tag, pull_request ]
+- name: lint
+  pull: always
+  image: golang:1.12
+  commands:
+  - make lint
+  environment:
+    GO111MODULE: on
+  volumes:
+  - name: gopath
+    path: /go
+
+- name: misspell
+  pull: always
+  image: golang:1.12
+  commands:
+  - make misspell-check
+  environment:
+    GO111MODULE: on
+  volumes:
+  - name: gopath
+    path: /go
+
+- name: test
+  pull: always
+  image: golang:1.12-alpine
+  commands:
+  - apk add git make curl perl bash build-base zlib-dev ucl-dev
+  - make ssh-server
+  - make test
+  environment:
+    GO111MODULE: on
+  volumes:
+  - name: gopath
+    path: /go
+
+- name: codecov
+  pull: always
+  image: robertstettner/drone-codecov
+  settings:
+    token:
+      from_secret: codecov_token
+
+volumes:
+- name: gopath
+  temp: {}
+
+...
