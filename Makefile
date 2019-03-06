@@ -1,6 +1,5 @@
-.PHONY: test drone-ssh fmt vet errcheck lint install update coverage embedmd
-
 GOFMT ?= gofmt "-s"
+GO ?= go
 PACKAGES ?= $(shell $(GO) list ./...)
 SOURCES ?= $(shell find . -name "*.go" -type f)
 
