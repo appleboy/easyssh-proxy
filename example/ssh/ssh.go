@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Call Run method with command you want to run on remote server.
-	stdout, stderr, done, err := ssh.Run("ls -al", 60)
+	stdout, stderr, done, err := ssh.Run("ls -al", 60*time.Second)
 	// Handle errors
 	if err != nil {
 		panic("Can't run remote command: " + err.Error())

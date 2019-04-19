@@ -69,7 +69,7 @@ func main() {
 	}
 
 	// Call Run method with command you want to run on remote server.
-	stdout, stderr, done, err := ssh.Run("ls -al", 60)
+	stdout, stderr, done, err := ssh.Run("ls -al", 60*time.Second)
 	// Handle errors
 	if err != nil {
 		panic("Can't run remote command: " + err.Error())
@@ -153,7 +153,7 @@ func main() {
 	}
 
 	// Call Run method with command you want to run on remote server.
-	stdoutChan, stderrChan, doneChan, errChan, err := ssh.Stream("for i in {1..5}; do echo ${i}; sleep 1; done; exit 2;", 60)
+	stdoutChan, stderrChan, doneChan, errChan, err := ssh.Stream("for i in {1..5}; do echo ${i}; sleep 1; done; exit 2;", 60*time.Second)
 	// Handle errors
 	if err != nil {
 		panic("Can't run remote command: " + err.Error())
