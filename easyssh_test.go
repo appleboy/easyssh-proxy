@@ -332,7 +332,7 @@ func TestSSHWithPassphrase(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir test1234;mkdir test1234;echo 2")
 	assert.Equal(t, "1\n", outStr)
-	assert.Equal(t, "mkdir: can't create directory 'a': File exists\n", errStr)
+	assert.Equal(t, "mkdir: can't create directory 'test1234': File exists\n", errStr)
 	assert.True(t, isTimeout)
 	assert.Error(t, err)
 }
