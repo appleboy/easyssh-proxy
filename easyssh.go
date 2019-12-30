@@ -134,11 +134,12 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 	var err error
 
 	targetConfig, closer := getSSHConfig(DefaultConfig{
-		User:     ssh_conf.User,
-		Key:      ssh_conf.Key,
-		KeyPath:  ssh_conf.KeyPath,
-		Password: ssh_conf.Password,
-		Timeout:  ssh_conf.Timeout,
+		User:       ssh_conf.User,
+		Key:        ssh_conf.Key,
+		KeyPath:    ssh_conf.KeyPath,
+		Passphrase: ssh_conf.Passphrase,
+		Password:   ssh_conf.Password,
+		Timeout:    ssh_conf.Timeout,
 	})
 	if closer != nil {
 		defer closer.Close()
@@ -147,11 +148,12 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 	// Enable proxy command
 	if ssh_conf.Proxy.Server != "" {
 		proxyConfig, closer := getSSHConfig(DefaultConfig{
-			User:     ssh_conf.Proxy.User,
-			Key:      ssh_conf.Proxy.Key,
-			KeyPath:  ssh_conf.Proxy.KeyPath,
-			Password: ssh_conf.Proxy.Password,
-			Timeout:  ssh_conf.Proxy.Timeout,
+			User:       ssh_conf.Proxy.User,
+			Key:        ssh_conf.Proxy.Key,
+			KeyPath:    ssh_conf.Proxy.KeyPath,
+			Passphrase: ssh_conf.Proxy.Passphrase,
+			Password:   ssh_conf.Proxy.Password,
+			Timeout:    ssh_conf.Proxy.Timeout,
 		})
 		if closer != nil {
 			defer closer.Close()
