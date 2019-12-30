@@ -319,3 +319,20 @@ func TestExitCode(t *testing.T) {
 	assert.True(t, isTimeout)
 	assert.Error(t, err)
 }
+
+func TestSSHWithPassphrase(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:     "localhost",
+		User:       "drone-scp",
+		Port:       "22",
+		KeyPath:    "./tests/.ssh/test",
+		Passphrase: "1234",
+		Timeout:    60 * time.Second,
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir test1234;mkdir test1234;echo 2")
+	assert.Equal(t, "1\n", outStr)
+	assert.Equal(t, "mkdir: can't create directory 'a': File exists\n", errStr)
+	assert.True(t, isTimeout)
+	assert.Error(t, err)
+}
