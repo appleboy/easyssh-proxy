@@ -12,16 +12,19 @@ import (
 
 func TestGetKeyFile(t *testing.T) {
 	// missing file
-	_, err := getKeyFile("abc")
+	_, err := getKeyFile("abc", "")
 	assert.Error(t, err)
 	assert.Equal(t, "open abc: no such file or directory", err.Error())
 
 	// wrong format
-	_, err = getKeyFile("./tests/.ssh/id_rsa.pub")
+	_, err = getKeyFile("./tests/.ssh/id_rsa.pub", "")
 	assert.Error(t, err)
 	assert.Equal(t, "ssh: no key found", err.Error())
 
-	_, err = getKeyFile("./tests/.ssh/id_rsa")
+	_, err = getKeyFile("./tests/.ssh/id_rsa", "")
+	assert.NoError(t, err)
+
+	_, err = getKeyFile("./tests/.ssh/test", "1234")
 	assert.NoError(t, err)
 }
 
@@ -313,6 +316,23 @@ func TestExitCode(t *testing.T) {
 	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir a;mkdir a;echo 2")
 	assert.Equal(t, "1\n", outStr)
 	assert.Equal(t, "mkdir: can't create directory 'a': File exists\n", errStr)
+	assert.True(t, isTimeout)
+	assert.Error(t, err)
+}
+
+func TestSSHWithPassphrase(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:     "localhost",
+		User:       "drone-scp",
+		Port:       "22",
+		KeyPath:    "./tests/.ssh/test",
+		Passphrase: "1234",
+		Timeout:    60 * time.Second,
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("set -e;echo 1; mkdir test1234;mkdir test1234;echo 2")
+	assert.Equal(t, "1\n", outStr)
+	assert.Equal(t, "mkdir: can't create directory 'test1234': File exists\n", errStr)
 	assert.True(t, isTimeout)
 	assert.Error(t, err)
 }

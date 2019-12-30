@@ -58,7 +58,8 @@ ssh-server:
 	echo drone-scp:1234 | chpasswd
 	mkdir -p /home/drone-scp/.ssh
 	chmod 700 /home/drone-scp/.ssh
-	cp tests/.ssh/id_rsa.pub /home/drone-scp/.ssh/authorized_keys
+	cat tests/.ssh/id_rsa.pub >> /home/drone-scp/.ssh/authorized_keys
+	cat tests/.ssh/test.pub >> /home/drone-scp/.ssh/authorized_keys
 	chown -R drone-scp /home/drone-scp/.ssh
 	# install ssh and start server
 	apk add --update openssh openrc
