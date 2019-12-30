@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ScaleFT/sshkeys"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
@@ -31,37 +32,46 @@ type (
 	// Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
 	// Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 	MakeConfig struct {
-		User     string
-		Server   string
-		Key      string
-		KeyPath  string
-		Port     string
-		Password string
-		Timeout  time.Duration
-		Proxy    DefaultConfig
+		User       string
+		Server     string
+		Key        string
+		KeyPath    string
+		Port       string
+		Passphrase string
+		Password   string
+		Timeout    time.Duration
+		Proxy      DefaultConfig
 	}
 
 	// DefaultConfig for ssh proxy config
 	DefaultConfig struct {
-		User     string
-		Server   string
-		Key      string
-		KeyPath  string
-		Port     string
-		Password string
-		Timeout  time.Duration
+		User       string
+		Server     string
+		Key        string
+		KeyPath    string
+		Port       string
+		Passphrase string
+		Password   string
+		Timeout    time.Duration
 	}
 )
 
 // returns ssh.Signer from user you running app home path + cutted key path.
 // (ex. pubkey,err := getKeyFile("/.ssh/id_rsa") )
-func getKeyFile(keypath string) (ssh.Signer, error) {
+func getKeyFile(keypath, passphrase string) (ssh.Signer, error) {
+	var pubkey ssh.Signer
+	var err error
 	buf, err := ioutil.ReadFile(keypath)
 	if err != nil {
 		return nil, err
 	}
 
-	pubkey, err := ssh.ParsePrivateKey(buf)
+	if passphrase != "" {
+		pubkey, err = sshkeys.ParseEncryptedPrivateKey(buf, []byte(passphrase))
+	} else {
+		pubkey, err = ssh.ParsePrivateKey(buf)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +93,7 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 		auths = append(auths, ssh.Password(config.Password))
 	}
 	if config.KeyPath != "" {
-		if pubkey, err := getKeyFile(config.KeyPath); err != nil {
+		if pubkey, err := getKeyFile(config.KeyPath, config.Passphrase); err != nil {
 			log.Printf("getKeyFile error: %v\n", err)
 		} else {
 			auths = append(auths, ssh.PublicKeys(pubkey))
@@ -91,7 +101,15 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 	}
 
 	if config.Key != "" {
-		if signer, err := ssh.ParsePrivateKey([]byte(config.Key)); err != nil {
+		var signer ssh.Signer
+		var err error
+		if config.Passphrase != "" {
+			signer, err = sshkeys.ParseEncryptedPrivateKey([]byte(config.Key), []byte(config.Passphrase))
+		} else {
+			signer, err = ssh.ParsePrivateKey([]byte(config.Key))
+		}
+
+		if err != nil {
 			log.Printf("ssh.ParsePrivateKey: %v\n", err)
 		} else {
 			auths = append(auths, ssh.PublicKeys(signer))

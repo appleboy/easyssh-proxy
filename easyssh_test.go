@@ -12,16 +12,19 @@ import (
 
 func TestGetKeyFile(t *testing.T) {
 	// missing file
-	_, err := getKeyFile("abc")
+	_, err := getKeyFile("abc", "")
 	assert.Error(t, err)
 	assert.Equal(t, "open abc: no such file or directory", err.Error())
 
 	// wrong format
-	_, err = getKeyFile("./tests/.ssh/id_rsa.pub")
+	_, err = getKeyFile("./tests/.ssh/id_rsa.pub", "")
 	assert.Error(t, err)
 	assert.Equal(t, "ssh: no key found", err.Error())
 
-	_, err = getKeyFile("./tests/.ssh/id_rsa")
+	_, err = getKeyFile("./tests/.ssh/id_rsa", "")
+	assert.NoError(t, err)
+
+	_, err = getKeyFile("./tests/.ssh/test", "1234")
 	assert.NoError(t, err)
 }
 
