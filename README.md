@@ -1,11 +1,10 @@
 # easyssh-proxy
 
-[![GoDoc](https://godoc.org/github.com/appleboy/easyssh-proxy?status.svg)](https://godoc.org/github.com/appleboy/easyssh-proxy) 
+[![GoDoc](https://godoc.org/github.com/appleboy/easyssh-proxy?status.svg)](https://godoc.org/github.com/appleboy/easyssh-proxy)
 [![Build Status](https://cloud.drone.io/api/badges/appleboy/easyssh-proxy/status.svg)](https://cloud.drone.io/appleboy/easyssh-proxy)
-[![codecov](https://codecov.io/gh/appleboy/easyssh-proxy/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/easyssh-proxy) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/easyssh-proxy)](https://goreportcard.com/report/github.com/appleboy/easyssh-proxy) 
+[![codecov](https://codecov.io/gh/appleboy/easyssh-proxy/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/easyssh-proxy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/easyssh-proxy)](https://goreportcard.com/report/github.com/appleboy/easyssh-proxy)
 [![Sourcegraph](https://sourcegraph.com/github.com/appleboy/easyssh-proxy/-/badge.svg)](https://sourcegraph.com/github.com/appleboy/easyssh-proxy?badge)
-[![Release](https://github-release-version.herokuapp.com/github/appleboy/easyssh-proxy/release.svg?style=flat)](https://github.com/appleboy/easyssh-proxy/releases/latest)
 
 easyssh-proxy provides a simple implementation of some SSH protocol features in Go.
 
@@ -18,7 +17,7 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
 * [x] Support Timeout for the TCP connection to establish.
 * [x] Support SSH ProxyCommand.
 
-```
+```bash
      +--------+       +----------+      +-----------+
      | Laptop | <-->  | Jumphost | <--> | FooServer |
      +--------+       +----------+      +-----------+
@@ -31,7 +30,7 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
      192.168.1.5       121.1.2.3         10.10.29.68
 ```
 
-## Usage:
+## Usage
 
 You can see `ssh`, `scp`, `ProxyCommand` on `examples` folder.
 
@@ -66,6 +65,8 @@ func main() {
 		KeyPath: "/Users/username/.ssh/id_rsa",
 		Port:    "22",
 		Timeout: 60 * time.Second,
+		// Parse PrivateKey With Passphrase
+		Passphrase: "1234",
 	}
 
 	// Call Run method with command you want to run on remote server.

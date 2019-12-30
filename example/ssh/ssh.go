@@ -23,6 +23,8 @@ func main() {
 		KeyPath: "/Users/username/.ssh/id_rsa",
 		Port:    "22",
 		Timeout: 60 * time.Second,
+		// Parse PrivateKey With Passphrase
+		Passphrase: "1234",
 	}
 
 	// Call Run method with command you want to run on remote server.
