@@ -75,7 +75,7 @@ func main() {
 	if err != nil {
 		panic("Can't run remote command: " + err.Error())
 	} else {
-		fmt.Println("done is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
+		fmt.Println("don is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
 	}
 
 }
