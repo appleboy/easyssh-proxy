@@ -129,7 +129,7 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 }
 
 // Connect to remote server using MakeConfig struct and returns *ssh.Session
-func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
+func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	var client *ssh.Client
 	var err error
 
@@ -161,33 +161,33 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, error) {
 
 		proxyClient, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		conn, err := proxyClient.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		ncc, chans, reqs, err := ssh.NewClientConn(conn, net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		client = ssh.NewClient(ncc, chans, reqs)
 	} else {
 		client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return session, nil
+	return session, client, nil
 }
 
 // Stream returns one channel that combines the stdout and stderr of the command
@@ -201,7 +201,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	errChan := make(chan error)
 
 	// connect to remote host
-	session, err := ssh_conf.Connect()
+	session, client, err := ssh_conf.Connect()
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
@@ -209,14 +209,20 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
+		client.Close()
+		session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 	errReader, err := session.StderrPipe()
 	if err != nil {
+		client.Close()
+		session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 	err = session.Start(command)
 	if err != nil {
+		client.Close()
+		session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 
@@ -231,6 +237,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 		defer close(stderrChan)
 		defer close(doneChan)
 		defer close(errChan)
+		defer client.Close()
 		defer session.Close()
 
 		// default timeout value
@@ -306,11 +313,12 @@ loop:
 
 // Scp uploads sourceFile to remote machine like native scp console app.
 func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
-	session, err := ssh_conf.Connect()
+	session, client, err := ssh_conf.Connect()
 
 	if err != nil {
 		return err
 	}
+	defer client.Close()
 	defer session.Close()
 
 	targetFile := filepath.Base(etargetFile)
