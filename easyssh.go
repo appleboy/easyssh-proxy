@@ -335,12 +335,12 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 		return statErr
 	}
 
-	go func() {
-		w, err := session.StdinPipe()
+	w, err := session.StdinPipe()
+	if err != nil {
+		return err
+	}
 
-		if err != nil {
-			return
-		}
+	go func() {
 		defer w.Close()
 
 		fmt.Fprintln(w, "C0644", srcStat.Size(), targetFile)
