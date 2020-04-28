@@ -335,23 +335,43 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 		return statErr
 	}
 
-	go func() {
-		w, err := session.StdinPipe()
+	w, err := session.StdinPipe()
+	if err != nil {
+		return err
+	}
 
+	copyF := func() error {
+		_, err := fmt.Fprintln(w, "C0644", srcStat.Size(), targetFile)
 		if err != nil {
-			return
+			return err
 		}
-		defer w.Close()
-
-		fmt.Fprintln(w, "C0644", srcStat.Size(), targetFile)
 
 		if srcStat.Size() > 0 {
-			io.Copy(w, src)
-			fmt.Fprint(w, "\x00")
-		} else {
-			fmt.Fprint(w, "\x00")
+			_, err = io.Copy(w, src)
+			if err != nil {
+				return err
+			}
 		}
+
+		_, err = fmt.Fprint(w, "\x00")
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	copyErrC := make(chan error, 1)
+	go func() {
+		defer w.Close()
+		copyErrC <- copyF()
 	}()
 
-	return session.Run(fmt.Sprintf("scp -tr %s", etargetFile))
+	err = session.Run(fmt.Sprintf("scp -tr %s", etargetFile))
+	if err != nil {
+		return err
+	}
+
+	err = <-copyErrC
+	return err
 }
