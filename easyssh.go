@@ -41,6 +41,7 @@ type (
 		Password   string
 		Timeout    time.Duration
 		Proxy      DefaultConfig
+		Ciphers    []string
 	}
 
 	// DefaultConfig for ssh proxy config
@@ -53,6 +54,7 @@ type (
 		Passphrase string
 		Password   string
 		Timeout    time.Duration
+		Ciphers    []string
 	}
 )
 
@@ -120,7 +122,13 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 		auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers))
 	}
 
+	c := ssh.Config{}
+	if len(config.Ciphers) > 0 {
+		c.Ciphers = config.Ciphers
+	}
+
 	return &ssh.ClientConfig{
+		Config:          c,
 		Timeout:         config.Timeout,
 		User:            config.User,
 		Auth:            auths,
