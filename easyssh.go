@@ -148,6 +148,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		Passphrase: ssh_conf.Passphrase,
 		Password:   ssh_conf.Password,
 		Timeout:    ssh_conf.Timeout,
+		Ciphers:    ssh_conf.Ciphers,
 	})
 	if closer != nil {
 		defer closer.Close()
@@ -162,6 +163,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			Passphrase: ssh_conf.Proxy.Passphrase,
 			Password:   ssh_conf.Proxy.Password,
 			Timeout:    ssh_conf.Proxy.Timeout,
+			Ciphers:    ssh_conf.Proxy.Ciphers,
 		})
 		if closer != nil {
 			defer closer.Close()
