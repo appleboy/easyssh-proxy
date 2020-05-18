@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/ssh"
 )
 
 func TestGetKeyFile(t *testing.T) {
@@ -25,6 +26,40 @@ func TestGetKeyFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = getKeyFile("./tests/.ssh/test", "1234")
+	assert.NoError(t, err)
+}
+
+func TestRunCommandWithFingerprint(t *testing.T) {
+	// wrong fingerprint
+	sshConf := &MakeConfig{
+		Server:      "localhost",
+		User:        "drone-scp",
+		Port:        "22",
+		KeyPath:     "./tests/.ssh/id_rsa",
+		Fingerprint: "wrong",
+	}
+
+	outStr, errStr, isTimeout, err := sshConf.Run("whoami", 10)
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "", errStr)
+	assert.False(t, isTimeout)
+	assert.Error(t, err)
+
+	hostKey, err := getHostPublicKeyFile("/etc/ssh/ssh_host_rsa_key.pub")
+	assert.NoError(t, err)
+
+	sshConf = &MakeConfig{
+		Server:      "localhost",
+		User:        "drone-scp",
+		Port:        "22",
+		KeyPath:     "./tests/.ssh/id_rsa",
+		Fingerprint: ssh.FingerprintSHA256(hostKey),
+	}
+
+	outStr, errStr, isTimeout, err = sshConf.Run("whoami")
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
 

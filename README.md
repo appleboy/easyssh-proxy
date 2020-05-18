@@ -67,6 +67,8 @@ func main() {
 		Timeout: 60 * time.Second,
 		// Parse PrivateKey With Passphrase
 		Passphrase: "1234",
+		// Optional fingerprint SHA256 verification
+		//Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
 	}
 
 	// Call Run method with command you want to run on remote server.
