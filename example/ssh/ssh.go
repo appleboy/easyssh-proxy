@@ -26,6 +26,7 @@ func main() {
 		// Parse PrivateKey With Passphrase
 		Passphrase: "1234",
 		// Optional fingerprint SHA256 verification
+		// Get Fingerprint: ssh.FingerprintSHA256(key)
 		//Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
 	}
 
