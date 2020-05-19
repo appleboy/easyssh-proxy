@@ -83,23 +83,6 @@ func getKeyFile(keypath, passphrase string) (ssh.Signer, error) {
 	return pubkey, nil
 }
 
-func getHostPublicKeyFile(keypath string) (ssh.PublicKey, error) {
-	var pubkey ssh.PublicKey
-	var err error
-	buf, err := ioutil.ReadFile(keypath)
-	if err != nil {
-		return nil, err
-	}
-
-	pubkey, _, _, _, err = ssh.ParseAuthorizedKey(buf)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return pubkey, nil
-}
-
 // returns *ssh.ClientConfig and io.Closer.
 // if io.Closer is not nil, io.Closer.Close() should be called when
 // *ssh.ClientConfig is no longer used.

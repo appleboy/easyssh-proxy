@@ -1,6 +1,7 @@
 package easyssh
 
 import (
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -10,6 +11,23 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/ssh"
 )
+
+func getHostPublicKeyFile(keypath string) (ssh.PublicKey, error) {
+	var pubkey ssh.PublicKey
+	var err error
+	buf, err := ioutil.ReadFile(keypath)
+	if err != nil {
+		return nil, err
+	}
+
+	pubkey, _, _, _, err = ssh.ParseAuthorizedKey(buf)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return pubkey, nil
+}
 
 func TestGetKeyFile(t *testing.T) {
 	// missing file
