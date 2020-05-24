@@ -151,7 +151,7 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 	c := ssh.Config{}
 	if config.UseInsecureCipher {
 		c.SetDefaults()
-		c.Ciphers = append(c.Ciphers, "aes128-cbc")
+		c.Ciphers = append(c.Ciphers, "aes128-cbc", "aes192-cbc", "aes256-cbc", "3des-cbc")
 		c.KeyExchanges = append(c.KeyExchanges, "diffie-hellman-group-exchange-sha1", "diffie-hellman-group-exchange-sha256")
 	}
 
