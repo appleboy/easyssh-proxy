@@ -65,15 +65,24 @@ func main() {
 		KeyPath: "/Users/username/.ssh/id_rsa",
 		Port:    "22",
 		Timeout: 60 * time.Second,
+
 		// Parse PrivateKey With Passphrase
 		Passphrase: "1234",
+
 		// Optional fingerprint SHA256 verification
 		// Get Fingerprint: ssh.FingerprintSHA256(key)
 		//Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
 
-		// include more ciphers with use_insecure_cipher
-		// common algorithm for key exchange
-		UseInsecureCipher: true,
+		// Enable the use of insecure ciphers and key exchange methods.
+		// This enables the use of the the following insecure ciphers and key exchange methods:
+		// - aes128-cbc
+		// - aes192-cbc
+		// - aes256-cbc
+		// - 3des-cbc
+		// - diffie-hellman-group-exchange-sha256
+		// - diffie-hellman-group-exchange-sha1
+		// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
+		// UseInsecureCipher: true,
 	}
 
 	// Call Run method with command you want to run on remote server.
