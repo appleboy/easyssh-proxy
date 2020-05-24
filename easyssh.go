@@ -168,15 +168,16 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	var err error
 
 	targetConfig, closer := getSSHConfig(DefaultConfig{
-		User:         ssh_conf.User,
-		Key:          ssh_conf.Key,
-		KeyPath:      ssh_conf.KeyPath,
-		Passphrase:   ssh_conf.Passphrase,
-		Password:     ssh_conf.Password,
-		Timeout:      ssh_conf.Timeout,
-		Ciphers:      ssh_conf.Ciphers,
-		KeyExchanges: ssh_conf.KeyExchanges,
-		Fingerprint:  ssh_conf.Fingerprint,
+		User:              ssh_conf.User,
+		Key:               ssh_conf.Key,
+		KeyPath:           ssh_conf.KeyPath,
+		Passphrase:        ssh_conf.Passphrase,
+		Password:          ssh_conf.Password,
+		Timeout:           ssh_conf.Timeout,
+		Ciphers:           ssh_conf.Ciphers,
+		KeyExchanges:      ssh_conf.KeyExchanges,
+		Fingerprint:       ssh_conf.Fingerprint,
+		UseInsecureCipher: ssh_conf.UseInsecureCipher,
 	})
 	if closer != nil {
 		defer closer.Close()
@@ -185,15 +186,16 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	// Enable proxy command
 	if ssh_conf.Proxy.Server != "" {
 		proxyConfig, closer := getSSHConfig(DefaultConfig{
-			User:         ssh_conf.Proxy.User,
-			Key:          ssh_conf.Proxy.Key,
-			KeyPath:      ssh_conf.Proxy.KeyPath,
-			Passphrase:   ssh_conf.Proxy.Passphrase,
-			Password:     ssh_conf.Proxy.Password,
-			Timeout:      ssh_conf.Proxy.Timeout,
-			Ciphers:      ssh_conf.Proxy.Ciphers,
-			KeyExchanges: ssh_conf.Proxy.KeyExchanges,
-			Fingerprint:  ssh_conf.Proxy.Fingerprint,
+			User:              ssh_conf.Proxy.User,
+			Key:               ssh_conf.Proxy.Key,
+			KeyPath:           ssh_conf.Proxy.KeyPath,
+			Passphrase:        ssh_conf.Proxy.Passphrase,
+			Password:          ssh_conf.Proxy.Password,
+			Timeout:           ssh_conf.Proxy.Timeout,
+			Ciphers:           ssh_conf.Proxy.Ciphers,
+			KeyExchanges:      ssh_conf.Proxy.KeyExchanges,
+			Fingerprint:       ssh_conf.Proxy.Fingerprint,
+			UseInsecureCipher: ssh_conf.Proxy.UseInsecureCipher,
 		})
 		if closer != nil {
 			defer closer.Close()
