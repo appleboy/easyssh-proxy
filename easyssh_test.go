@@ -393,3 +393,26 @@ func TestSSHWithPassphrase(t *testing.T) {
 	assert.True(t, isTimeout)
 	assert.Error(t, err)
 }
+
+func TestSCPCommandUseInsecureCipher(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:            "localhost",
+		User:              "drone-scp",
+		Port:              "22",
+		KeyPath:           "./tests/.ssh/id_rsa",
+		UseInsecureCipher: true,
+	}
+
+	err := ssh.Scp("./tests/a.txt", "a.txt")
+	assert.NoError(t, err)
+
+	u, err := user.Lookup("drone-scp")
+	if err != nil {
+		t.Fatalf("Lookup: %v", err)
+	}
+
+	// check file exist
+	if _, err := os.Stat(path.Join(u.HomeDir, "a.txt")); os.IsNotExist(err) {
+		t.Fatalf("SCP-error: %v", err)
+	}
+}

@@ -32,31 +32,35 @@ type (
 	// Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
 	// Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 	MakeConfig struct {
-		User        string
-		Server      string
-		Key         string
-		KeyPath     string
-		Port        string
-		Passphrase  string
-		Password    string
-		Timeout     time.Duration
-		Proxy       DefaultConfig
-		Ciphers     []string
-		Fingerprint string
+		User              string
+		Server            string
+		Key               string
+		KeyPath           string
+		Port              string
+		Passphrase        string
+		Password          string
+		Timeout           time.Duration
+		Proxy             DefaultConfig
+		Ciphers           []string
+		KeyExchanges      []string
+		Fingerprint       string
+		UseInsecureCipher bool
 	}
 
 	// DefaultConfig for ssh proxy config
 	DefaultConfig struct {
-		User        string
-		Server      string
-		Key         string
-		KeyPath     string
-		Port        string
-		Passphrase  string
-		Password    string
-		Timeout     time.Duration
-		Ciphers     []string
-		Fingerprint string
+		User              string
+		Server            string
+		Key               string
+		KeyPath           string
+		Port              string
+		Passphrase        string
+		Password          string
+		Timeout           time.Duration
+		Ciphers           []string
+		KeyExchanges      []string
+		Fingerprint       string
+		UseInsecureCipher bool
 	}
 )
 
@@ -125,8 +129,18 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 	}
 
 	c := ssh.Config{}
+	if config.UseInsecureCipher {
+		c.SetDefaults()
+		c.Ciphers = append(c.Ciphers, "aes128-cbc")
+		c.KeyExchanges = append(c.KeyExchanges, "diffie-hellman-group-exchange-sha1", "diffie-hellman-group-exchange-sha256")
+	}
+
 	if len(config.Ciphers) > 0 {
-		c.Ciphers = config.Ciphers
+		c.Ciphers = append(c.Ciphers, config.Ciphers...)
+	}
+
+	if len(config.KeyExchanges) > 0 {
+		c.KeyExchanges = append(c.KeyExchanges, config.KeyExchanges...)
 	}
 
 	hostKeyCallback := ssh.InsecureIgnoreHostKey()
@@ -154,14 +168,15 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	var err error
 
 	targetConfig, closer := getSSHConfig(DefaultConfig{
-		User:        ssh_conf.User,
-		Key:         ssh_conf.Key,
-		KeyPath:     ssh_conf.KeyPath,
-		Passphrase:  ssh_conf.Passphrase,
-		Password:    ssh_conf.Password,
-		Timeout:     ssh_conf.Timeout,
-		Ciphers:     ssh_conf.Ciphers,
-		Fingerprint: ssh_conf.Fingerprint,
+		User:         ssh_conf.User,
+		Key:          ssh_conf.Key,
+		KeyPath:      ssh_conf.KeyPath,
+		Passphrase:   ssh_conf.Passphrase,
+		Password:     ssh_conf.Password,
+		Timeout:      ssh_conf.Timeout,
+		Ciphers:      ssh_conf.Ciphers,
+		KeyExchanges: ssh_conf.KeyExchanges,
+		Fingerprint:  ssh_conf.Fingerprint,
 	})
 	if closer != nil {
 		defer closer.Close()
@@ -170,14 +185,15 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	// Enable proxy command
 	if ssh_conf.Proxy.Server != "" {
 		proxyConfig, closer := getSSHConfig(DefaultConfig{
-			User:        ssh_conf.Proxy.User,
-			Key:         ssh_conf.Proxy.Key,
-			KeyPath:     ssh_conf.Proxy.KeyPath,
-			Passphrase:  ssh_conf.Proxy.Passphrase,
-			Password:    ssh_conf.Proxy.Password,
-			Timeout:     ssh_conf.Proxy.Timeout,
-			Ciphers:     ssh_conf.Proxy.Ciphers,
-			Fingerprint: ssh_conf.Proxy.Fingerprint,
+			User:         ssh_conf.Proxy.User,
+			Key:          ssh_conf.Proxy.Key,
+			KeyPath:      ssh_conf.Proxy.KeyPath,
+			Passphrase:   ssh_conf.Proxy.Passphrase,
+			Password:     ssh_conf.Proxy.Password,
+			Timeout:      ssh_conf.Proxy.Timeout,
+			Ciphers:      ssh_conf.Proxy.Ciphers,
+			KeyExchanges: ssh_conf.Proxy.KeyExchanges,
+			Fingerprint:  ssh_conf.Proxy.Fingerprint,
 		})
 		if closer != nil {
 			defer closer.Close()
