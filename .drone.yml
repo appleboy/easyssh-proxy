@@ -9,7 +9,7 @@ platform:
 steps:
 - name: vet
   pull: always
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - make vet
   environment:
@@ -20,7 +20,7 @@ steps:
 
 - name: lint
   pull: always
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - make lint
   environment:
@@ -31,7 +31,7 @@ steps:
 
 - name: misspell
   pull: always
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - make misspell-check
   environment:
@@ -42,7 +42,7 @@ steps:
 
 - name: embedmd
   pull: always
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - make embedmd
   environment:
@@ -53,7 +53,7 @@ steps:
 
 - name: test
   pull: always
-  image: golang:1.13-alpine
+  image: golang:1.14-alpine
   commands:
   - apk add git make curl perl bash build-base zlib-dev ucl-dev
   - make ssh-server
