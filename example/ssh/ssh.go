@@ -28,6 +28,10 @@ func main() {
 		// Optional fingerprint SHA256 verification
 		// Get Fingerprint: ssh.FingerprintSHA256(key)
 		//Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
+
+		// include more ciphers with use_insecure_cipher
+		// common algorithm for key exchange
+		UseInsecureCipher: true,
 	}
 
 	// Call Run method with command you want to run on remote server.
