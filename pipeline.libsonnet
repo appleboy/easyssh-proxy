@@ -9,7 +9,7 @@
     steps: [
       {
         name: 'vet',
-        image: 'golang:1.14',
+        image: 'golang:1.15',
         pull: 'always',
         environment: {
           GO111MODULE: 'on',
@@ -26,7 +26,7 @@
       },
       {
         name: 'lint',
-        image: 'golang:1.14',
+        image: 'golang:1.15',
         pull: 'always',
         environment: {
           GO111MODULE: 'on',
@@ -43,7 +43,7 @@
       },
       {
         name: 'misspell',
-        image: 'golang:1.14',
+        image: 'golang:1.15',
         pull: 'always',
         environment: {
           GO111MODULE: 'on',
@@ -60,7 +60,7 @@
       },
       {
         name: 'embedmd',
-        image: 'golang:1.14',
+        image: 'golang:1.15',
         pull: 'always',
         environment: {
           GO111MODULE: 'on',
@@ -77,7 +77,7 @@
       },
       {
         name: 'test',
-        image: 'golang:1.14-alpine',
+        image: 'golang:1.15-alpine',
         pull: 'always',
         environment: {
           GO111MODULE: 'on',
