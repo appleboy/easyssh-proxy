@@ -1,4 +1,4 @@
-GOFMT ?= gofmt "-s"
+GOFMT ?= gofumpt -l -s
 GO ?= go
 PACKAGES ?= $(shell $(GO) list ./...)
 SOURCES ?= $(shell find . -name "*.go" -type f)
@@ -6,6 +6,9 @@ SOURCES ?= $(shell find . -name "*.go" -type f)
 all: lint
 
 fmt:
+	@hash gofumpt > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
+		$(GO) get -u mvdan.cc/gofumpt; \
+	fi
 	$(GOFMT) -w $(SOURCES)
 
 vet:
@@ -33,6 +36,9 @@ misspell:
 
 .PHONY: fmt-check
 fmt-check:
+	@hash gofumpt > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
+		$(GO) get -u mvdan.cc/gofumpt; \
+	fi
 	@diff=$$($(GOFMT) -d $(SOURCES)); \
 	if [ -n "$$diff" ]; then \
 		echo "Please run 'make fmt' and commit the result:"; \

@@ -376,7 +376,6 @@ loop:
 // Scp uploads sourceFile to remote machine like native scp console app.
 func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	session, client, err := ssh_conf.Connect()
-
 	if err != nil {
 		return err
 	}
