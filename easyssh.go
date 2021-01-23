@@ -71,6 +71,12 @@ type (
 		KeyExchanges []string
 		Fingerprint  string
 
+		// http proxy support
+		ProxyHost         string
+		ProxyPort         string
+		ProxyUserName     string
+		ProxyUserPassword string
+
 		// Enable the use of insecure ciphers and key exchange methods.
 		// This enables the use of the the following insecure ciphers and key exchange methods:
 		// - aes128-cbc
@@ -203,6 +209,16 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		defer closer.Close()
 	}
 
+	// HTTP proxy support
+	var proxyAddr string
+	if ssh_conf.Proxy.ProxyHost != "" && ssh_conf.Proxy.ProxyPort != "" {
+		proxyAddr = ssh_conf.Proxy.ProxyHost + ":" + ssh_conf.Proxy.ProxyPort
+
+		if ssh_conf.Proxy.ProxyUserName != "" && ssh_conf.Proxy.ProxyUserPassword != "" {
+			proxyAddr = ssh_conf.Proxy.ProxyUserName + ":" + ssh_conf.Proxy.ProxyUserPassword + "@" + proxyAddr
+		}
+	}
+
 	// Enable proxy command
 	if ssh_conf.Proxy.Server != "" {
 		proxyConfig, closer := getSSHConfig(DefaultConfig{
@@ -220,8 +236,35 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		if closer != nil {
 			defer closer.Close()
 		}
+		var err error
+		var proxyClient *ssh.Client
+		var direct Direct
 
-		proxyClient, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		if proxyAddr != "" {
+			var pConn net.Conn
+			var bConn ssh.Conn
+			var bChans <-chan ssh.NewChannel
+			var bReq <-chan *ssh.Request
+
+			bAddr := net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port)
+			direct = Direct{}
+
+			RegisterDialerType()
+			pConn, err = NewHttpProxyConn(direct, proxyAddr, bAddr)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
+			}
+
+			bConn, bChans, bReq, err = ssh.NewClientConn(pConn, bAddr, proxyConfig)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error creating new client connection via proxy: %s", err)
+			}
+			proxyClient = ssh.NewClient(bConn, bChans, bReq)
+		} else {
+			proxyClient, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		}
 		if err != nil {
 			return nil, nil, err
 		}
