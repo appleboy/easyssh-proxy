@@ -3,10 +3,11 @@ package easyssh
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/net/proxy"
 	"net"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/proxy"
 )
 
 type directDialer struct{}
@@ -51,13 +52,11 @@ func newHTTPProxyConn(d directDialer, proxyAddr, targetAddr string) (net.Conn, e
 	}
 
 	proxyDialer, err := proxy.FromURL(proxyURL, d)
-
 	if err != nil {
 		return nil, err
 	}
 
 	proxyConn, err := proxyDialer.Dial("tcp", targetAddr)
-
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +66,6 @@ func newHTTPProxyConn(d directDialer, proxyAddr, targetAddr string) (net.Conn, e
 
 func (p *connectProxyDialer) Dial(_, addr string) (net.Conn, error) {
 	c, err := p.forward.Dial("tcp", p.host)
-
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +95,6 @@ func (p *connectProxyDialer) Dial(_, addr string) (net.Conn, error) {
 	}
 
 	res, err := http.ReadResponse(bufio.NewReader(c), req)
-
 	if err != nil {
 		res.Body.Close()
 		_ = c.Close()
