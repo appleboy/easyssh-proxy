@@ -16,6 +16,7 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
 * [x] Support key path of user private key.
 * [x] Support Timeout for the TCP connection to establish.
 * [x] Support SSH ProxyCommand.
+* [x] Support HTTP Proxy traversal.
 
 ```bash
      +--------+       +----------+      +-----------+
@@ -28,6 +29,15 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
      | Laptop | <-->  | Firewall | <--> | FooServer |
      +--------+       +----------+      +-----------+
      192.168.1.5       121.1.2.3         10.10.29.68
+
+
+                         OR
+
+     +--------+       +-----------------+      +----------+       +-----------+
+     | Laptop | <-->  | Corporate Proxy | <--> | Jumphost |  <--> | FooServer |
+     +--------+       +-----------------+      +----------+       +-----------+
+     192.168.1.5       192.168.1.1:8080          121.1.2.3         10.10.29.68
+
 ```
 
 ## Usage
@@ -55,7 +65,7 @@ func main() {
 		User:   "appleboy",
 		Server: "example.com",
 		// Optional key or Password without either we try to contact your agent SOCKET
-		//Password: "password",
+		// Password: "password",
 		// Paste your source content of private key
 		// Key: `-----BEGIN RSA PRIVATE KEY-----
 		// MIIEpAIBAAKCAQEA4e2D/qPN08pzTac+a8ZmlP1ziJOXk45CynMPtva0rtK/RB26
@@ -71,7 +81,7 @@ func main() {
 
 		// Optional fingerprint SHA256 verification
 		// Get Fingerprint: ssh.FingerprintSHA256(key)
-		//Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
+		// Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
 
 		// Enable the use of insecure ciphers and key exchange methods.
 		// This enables the use of the the following insecure ciphers and key exchange methods:
@@ -93,7 +103,6 @@ func main() {
 	} else {
 		fmt.Println("don is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
 	}
-
 }
 ```
 
