@@ -44,7 +44,7 @@ func registerDialerType() {
 	proxy.RegisterDialerType("https", newConnectProxyDialer)
 }
 
-func newHttpProxyConn(d directDialer, proxyAddr, targetAddr string) (net.Conn, error) {
+func newHTTPProxyConn(d directDialer, proxyAddr, targetAddr string) (net.Conn, error) {
 	proxyURL, err := url.Parse("http://" + proxyAddr)
 	if err != nil {
 		return nil, err

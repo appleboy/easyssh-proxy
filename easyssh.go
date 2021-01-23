@@ -250,7 +250,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			direct = directDialer{}
 
 			registerDialerType()
-			pConn, err = newHttpProxyConn(direct, proxyAddr, bAddr)
+			pConn, err = newHTTPProxyConn(direct, proxyAddr, bAddr)
 
 			if err != nil {
 				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
@@ -291,7 +291,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			direct := directDialer{}
 
 			registerDialerType()
-			pConn, err = newHttpProxyConn(direct, proxyAddr, bAddr)
+			pConn, err = newHTTPProxyConn(direct, proxyAddr, bAddr)
 
 			if err != nil {
 				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
