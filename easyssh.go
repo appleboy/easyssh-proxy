@@ -238,7 +238,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		}
 		var err error
 		var proxyClient *ssh.Client
-		var direct Direct
+		var direct directDialer
 
 		if proxyAddr != "" {
 			var pConn net.Conn
@@ -247,10 +247,10 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			var bReq <-chan *ssh.Request
 
 			bAddr := net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port)
-			direct = Direct{}
+			direct = directDialer{}
 
-			RegisterDialerType()
-			pConn, err = NewHttpProxyConn(direct, proxyAddr, bAddr)
+			registerDialerType()
+			pConn, err = newHttpProxyConn(direct, proxyAddr, bAddr)
 
 			if err != nil {
 				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
@@ -288,10 +288,10 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			var bReq <-chan *ssh.Request
 
 			bAddr := net.JoinHostPort(ssh_conf.Server, ssh_conf.Port)
-			direct := Direct{}
+			direct := directDialer{}
 
-			RegisterDialerType()
-			pConn, err = NewHttpProxyConn(direct, proxyAddr, bAddr)
+			registerDialerType()
+			pConn, err = newHttpProxyConn(direct, proxyAddr, bAddr)
 
 			if err != nil {
 				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)

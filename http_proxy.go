@@ -9,9 +9,9 @@ import (
 	"net/url"
 )
 
-type Direct struct{}
+type directDialer struct{}
 
-func (Direct) Dial(network, addr string) (net.Conn, error) {
+func (directDialer) Dial(network, addr string) (net.Conn, error) {
 	return net.Dial(network, addr)
 }
 
@@ -23,7 +23,7 @@ type connectProxyDialer struct {
 	password string
 }
 
-func NewConnectProxyDialer(u *url.URL, forward proxy.Dialer) (proxy.Dialer, error) {
+func newConnectProxyDialer(u *url.URL, forward proxy.Dialer) (proxy.Dialer, error) {
 	host := u.Host
 	p := &connectProxyDialer{
 		host:    host,
@@ -39,12 +39,12 @@ func NewConnectProxyDialer(u *url.URL, forward proxy.Dialer) (proxy.Dialer, erro
 	return p, nil
 }
 
-func RegisterDialerType() {
-	proxy.RegisterDialerType("http", NewConnectProxyDialer)
-	proxy.RegisterDialerType("https", NewConnectProxyDialer)
+func registerDialerType() {
+	proxy.RegisterDialerType("http", newConnectProxyDialer)
+	proxy.RegisterDialerType("https", newConnectProxyDialer)
 }
 
-func NewHttpProxyConn(d Direct, proxyAddr, targetAddr string) (net.Conn, error) {
+func newHttpProxyConn(d directDialer, proxyAddr, targetAddr string) (net.Conn, error) {
 	proxyURL, err := url.Parse("http://" + proxyAddr)
 	if err != nil {
 		return nil, err
@@ -65,22 +65,22 @@ func NewHttpProxyConn(d Direct, proxyAddr, targetAddr string) (net.Conn, error) 
 	return proxyConn, err
 }
 
-func (p *connectProxyDialer) Dial(network, addr string) (net.Conn, error) {
+func (p *connectProxyDialer) Dial(_, addr string) (net.Conn, error) {
 	c, err := p.forward.Dial("tcp", p.host)
 
 	if err != nil {
 		return nil, err
 	}
 
-	reqUrl, err := url.Parse("http://" + addr)
+	reqURL, err := url.Parse("http://" + addr)
 	if err != nil {
-		c.Close()
+		_ = c.Close()
 		return nil, err
 	}
 
-	req, err := http.NewRequest("CONNECT", reqUrl.String(), nil)
+	req, err := http.NewRequest("CONNECT", reqURL.String(), nil)
 	if err != nil {
-		c.Close()
+		_ = c.Close()
 		return nil, err
 	}
 
@@ -92,7 +92,7 @@ func (p *connectProxyDialer) Dial(network, addr string) (net.Conn, error) {
 
 	err = req.Write(c)
 	if err != nil {
-		c.Close()
+		_ = c.Close()
 		return nil, err
 	}
 
@@ -100,14 +100,14 @@ func (p *connectProxyDialer) Dial(network, addr string) (net.Conn, error) {
 
 	if err != nil {
 		res.Body.Close()
-		c.Close()
+		_ = c.Close()
 		return nil, err
 	}
 
 	res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		c.Close()
+		_ = c.Close()
 		return nil, fmt.Errorf("Connection Error: StatusCode: %d", res.StatusCode)
 	}
 
