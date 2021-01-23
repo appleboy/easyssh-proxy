@@ -45,6 +45,12 @@ type (
 		KeyExchanges []string
 		Fingerprint  string
 
+		// http proxy support
+		ProxyHost         string
+		ProxyPort         string
+		ProxyUserName     string
+		ProxyUserPassword string
+
 		// Enable the use of insecure ciphers and key exchange methods.
 		// This enables the use of the the following insecure ciphers and key exchange methods:
 		// - aes128-cbc
@@ -70,12 +76,6 @@ type (
 		Ciphers      []string
 		KeyExchanges []string
 		Fingerprint  string
-
-		// http proxy support
-		ProxyHost         string
-		ProxyPort         string
-		ProxyUserName     string
-		ProxyUserPassword string
 
 		// Enable the use of insecure ciphers and key exchange methods.
 		// This enables the use of the the following insecure ciphers and key exchange methods:
@@ -211,15 +211,15 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 
 	// HTTP proxy support
 	var proxyAddr string
-	if ssh_conf.Proxy.ProxyHost != "" && ssh_conf.Proxy.ProxyPort != "" {
-		proxyAddr = ssh_conf.Proxy.ProxyHost + ":" + ssh_conf.Proxy.ProxyPort
+	if ssh_conf.ProxyHost != "" && ssh_conf.ProxyPort != "" {
+		proxyAddr = ssh_conf.ProxyHost + ":" + ssh_conf.ProxyPort
 
-		if ssh_conf.Proxy.ProxyUserName != "" && ssh_conf.Proxy.ProxyUserPassword != "" {
-			proxyAddr = ssh_conf.Proxy.ProxyUserName + ":" + ssh_conf.Proxy.ProxyUserPassword + "@" + proxyAddr
+		if ssh_conf.ProxyUserName != "" && ssh_conf.ProxyUserPassword != "" {
+			proxyAddr = ssh_conf.ProxyUserName + ":" + ssh_conf.ProxyUserPassword + "@" + proxyAddr
 		}
 	}
 
-	// Enable proxy command
+	// Use bastion server
 	if ssh_conf.Proxy.Server != "" {
 		proxyConfig, closer := getSSHConfig(DefaultConfig{
 			User:              ssh_conf.Proxy.User,
@@ -259,7 +259,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			bConn, bChans, bReq, err = ssh.NewClientConn(pConn, bAddr, proxyConfig)
 
 			if err != nil {
-				return nil, nil, fmt.Errorf("Error creating new client connection via proxy: %s", err)
+				return nil, nil, fmt.Errorf("Error creating new client connection via proxy bastion: %s", err)
 			}
 			proxyClient = ssh.NewClient(bConn, bChans, bReq)
 		} else {
@@ -281,7 +281,31 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 
 		client = ssh.NewClient(ncc, chans, reqs)
 	} else {
-		client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		if proxyAddr != "" {
+			var pConn net.Conn
+			var bConn ssh.Conn
+			var bChans <-chan ssh.NewChannel
+			var bReq <-chan *ssh.Request
+
+			bAddr := net.JoinHostPort(ssh_conf.Server, ssh_conf.Port)
+			direct := Direct{}
+
+			RegisterDialerType()
+			pConn, err = NewHttpProxyConn(direct, proxyAddr, bAddr)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
+			}
+
+			bConn, bChans, bReq, err = ssh.NewClientConn(pConn, bAddr, targetConfig)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error creating new client connection via proxy: %s", err)
+			}
+			client = ssh.NewClient(bConn, bChans, bReq)
+		} else {
+			client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		}
 		if err != nil {
 			return nil, nil, err
 		}
