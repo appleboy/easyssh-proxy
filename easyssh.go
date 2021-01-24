@@ -11,6 +11,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
@@ -32,36 +34,33 @@ type (
 	// Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
 	// Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 	MakeConfig struct {
-		User         string
-		Server       string
-		Key          string
-		KeyPath      string
-		Port         string
-		Passphrase   string
-		Password     string
-		Timeout      time.Duration
-		Proxy        DefaultConfig
-		Ciphers      []string
-		KeyExchanges []string
-		Fingerprint  string
+	User         string
+	Server       string
+	Key          string
+	KeyPath      string
+	Port         string
+	Passphrase   string
+	Password     string
+	Timeout      time.Duration
+	Proxy        DefaultConfig
+	Ciphers      []string
+	KeyExchanges []string
+	Fingerprint  string
 
-		// http proxy support
-		ProxyHost         string
-		ProxyPort         string
-		ProxyUserName     string
-		ProxyUserPassword string
+	// HTTP Proxy support
+	ProxyInfo         func(req *http.Request) (*url.URL, error)
 
-		// Enable the use of insecure ciphers and key exchange methods.
-		// This enables the use of the the following insecure ciphers and key exchange methods:
-		// - aes128-cbc
-		// - aes192-cbc
-		// - aes256-cbc
-		// - 3des-cbc
-		// - diffie-hellman-group-exchange-sha256
-		// - diffie-hellman-group-exchange-sha1
-		// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
-		UseInsecureCipher bool
-	}
+	// Enable the use of insecure ciphers and key exchange methods.
+	// This enables the use of the the following insecure ciphers and key exchange methods:
+	// - aes128-cbc
+	// - aes192-cbc
+	// - aes256-cbc
+	// - 3des-cbc
+	// - diffie-hellman-group-exchange-sha256
+	// - diffie-hellman-group-exchange-sha1
+	// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
+	UseInsecureCipher bool
+}
 
 	// DefaultConfig for ssh proxy config
 	DefaultConfig struct {
@@ -211,11 +210,19 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 
 	// HTTP proxy support
 	var proxyAddr string
-	if ssh_conf.ProxyHost != "" && ssh_conf.ProxyPort != "" {
-		proxyAddr = ssh_conf.ProxyHost + ":" + ssh_conf.ProxyPort
-
-		if ssh_conf.ProxyUserName != "" && ssh_conf.ProxyUserPassword != "" {
-			proxyAddr = ssh_conf.ProxyUserName + ":" + ssh_conf.ProxyUserPassword + "@" + proxyAddr
+	if ssh_conf.ProxyInfo != nil {
+		req, _ := http.NewRequest("CONNECT", "https://"+ssh_conf.Server, nil)
+		proxyInfo, err := ssh_conf.ProxyInfo(req)
+		if proxyInfo == nil { // Try http:// as well
+			req, _ = http.NewRequest("CONNECT", "http://"+ssh_conf.Server, nil)
+			proxyInfo, err = ssh_conf.ProxyInfo(req)
+		}
+		if err == nil && proxyInfo != nil {
+			proxyAddr = proxyInfo.Host
+			if proxyInfo.User != nil {
+				password, _ := proxyInfo.User.Password()
+				proxyAddr = proxyInfo.User.Username() + ":" + password + "@" + proxyAddr
+			}
 		}
 	}
 
