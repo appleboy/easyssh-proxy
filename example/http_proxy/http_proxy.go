@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/appleboy/easyssh-proxy"
 	"net/http"
+
+	"github.com/appleboy/easyssh-proxy"
 )
 
 func main() {

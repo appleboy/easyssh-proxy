@@ -34,33 +34,33 @@ type (
 	// Note: easyssh looking for private key in user's home directory (ex. /home/john + Key).
 	// Then ensure your Key begins from '/' (ex. /.ssh/id_rsa)
 	MakeConfig struct {
-	User         string
-	Server       string
-	Key          string
-	KeyPath      string
-	Port         string
-	Passphrase   string
-	Password     string
-	Timeout      time.Duration
-	Proxy        DefaultConfig
-	Ciphers      []string
-	KeyExchanges []string
-	Fingerprint  string
+		User         string
+		Server       string
+		Key          string
+		KeyPath      string
+		Port         string
+		Passphrase   string
+		Password     string
+		Timeout      time.Duration
+		Proxy        DefaultConfig
+		Ciphers      []string
+		KeyExchanges []string
+		Fingerprint  string
 
-	// HTTP Proxy support
-	ProxyInfo         func(req *http.Request) (*url.URL, error)
+		// HTTP Proxy support
+		ProxyInfo func(req *http.Request) (*url.URL, error)
 
-	// Enable the use of insecure ciphers and key exchange methods.
-	// This enables the use of the the following insecure ciphers and key exchange methods:
-	// - aes128-cbc
-	// - aes192-cbc
-	// - aes256-cbc
-	// - 3des-cbc
-	// - diffie-hellman-group-exchange-sha256
-	// - diffie-hellman-group-exchange-sha1
-	// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
-	UseInsecureCipher bool
-}
+		// Enable the use of insecure ciphers and key exchange methods.
+		// This enables the use of the the following insecure ciphers and key exchange methods:
+		// - aes128-cbc
+		// - aes192-cbc
+		// - aes256-cbc
+		// - 3des-cbc
+		// - diffie-hellman-group-exchange-sha256
+		// - diffie-hellman-group-exchange-sha1
+		// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
+		UseInsecureCipher bool
+	}
 
 	// DefaultConfig for ssh proxy config
 	DefaultConfig struct {
