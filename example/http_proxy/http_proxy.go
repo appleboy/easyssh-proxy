@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/appleboy/easyssh-proxy"
+	"net/http"
 )
 
 func main() {
@@ -14,8 +14,7 @@ func main() {
 		Server:    "localhost",
 		Port:      "22",
 		KeyPath:   "./tests/.ssh/id_rsa",
-		ProxyHost: "127.0.0.1",
-		ProxyPort: "8888",
+		ProxyInfo: http.ProxyFromEnvironment,
 		Proxy: easyssh.DefaultConfig{
 			User:    "drone-scp",
 			Server:  "localhost",
