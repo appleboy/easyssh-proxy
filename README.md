@@ -55,7 +55,7 @@ func main() {
 		User:   "appleboy",
 		Server: "example.com",
 		// Optional key or Password without either we try to contact your agent SOCKET
-		//Password: "password",
+		// Password: "password",
 		// Paste your source content of private key
 		// Key: `-----BEGIN RSA PRIVATE KEY-----
 		// MIIEpAIBAAKCAQEA4e2D/qPN08pzTac+a8ZmlP1ziJOXk45CynMPtva0rtK/RB26
@@ -71,7 +71,7 @@ func main() {
 
 		// Optional fingerprint SHA256 verification
 		// Get Fingerprint: ssh.FingerprintSHA256(key)
-		//Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
+		// Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
 
 		// Enable the use of insecure ciphers and key exchange methods.
 		// This enables the use of the the following insecure ciphers and key exchange methods:
@@ -93,7 +93,6 @@ func main() {
 	} else {
 		fmt.Println("don is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
 	}
-
 }
 ```
 
