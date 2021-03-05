@@ -295,8 +295,6 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	stderrScanner := bufio.NewScanner(stderrReader)
 
 	go func(stdoutScanner, stderrScanner *bufio.Scanner, stdoutChan, stderrChan chan string, doneChan chan bool, errChan chan error) {
-		defer close(stdoutChan)
-		defer close(stderrChan)
 		defer close(doneChan)
 		defer close(errChan)
 		defer client.Close()
@@ -313,6 +311,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 		resWg.Add(2)
 
 		go func() {
+			defer close(stdoutChan)
 			for stdoutScanner.Scan() {
 				stdoutChan <- stdoutScanner.Text()
 			}
@@ -320,6 +319,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 		}()
 
 		go func() {
+			defer close(stderrChan)
 			for stderrScanner.Scan() {
 				stderrChan <- stderrScanner.Text()
 			}
