@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -381,6 +382,9 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	}
 	defer client.Close()
 	defer session.Close()
+
+	// escape space in file name
+	etargetFile = strings.ReplaceAll(etargetFile, " ", "\\ ")
 
 	targetFile := filepath.Base(etargetFile)
 
