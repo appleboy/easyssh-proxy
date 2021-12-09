@@ -120,9 +120,10 @@ func TestRunCommand(t *testing.T) {
 	// error message: Run Command Timeout
 	outStr, errStr, isTimeout, err = ssh.Run("sleep 2", 1*time.Second)
 	assert.Equal(t, "", outStr)
-	assert.Equal(t, "Run Command Timeout!\n", errStr)
+	assert.Equal(t, "", errStr)
 	assert.False(t, isTimeout)
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, "Run Command Timeout", err.Error())
 
 	// test exit code
 	outStr, errStr, isTimeout, err = ssh.Run("exit 1")

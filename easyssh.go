@@ -337,8 +337,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 			errChan <- session.Wait()
 			doneChan <- true
 		case <-timeoutChan:
-			stderrChan <- "Run Command Timeout!"
-			errChan <- nil
+			errChan <- fmt.Errorf("Run Command Timeout")
 			doneChan <- false
 		}
 	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, doneChan, errChan)
@@ -358,11 +357,17 @@ loop:
 		select {
 		case isTimeout = <-doneChan:
 			break loop
-		case outline := <-stdoutChan:
+		case outline, ok := <-stdoutChan:
+			if !ok {
+				stdoutChan = nil
+			}
 			if outline != "" {
 				outStr += outline + "\n"
 			}
-		case errline := <-stderrChan:
+		case errline, ok := <-stderrChan:
+			if !ok {
+				stderrChan = nil
+			}
 			if errline != "" {
 				errStr += errline + "\n"
 			}
