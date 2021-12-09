@@ -357,11 +357,17 @@ loop:
 		select {
 		case isTimeout = <-doneChan:
 			break loop
-		case outline := <-stdoutChan:
+		case outline, ok := <-stdoutChan:
+			if !ok {
+				stdoutChan = nil
+			}
 			if outline != "" {
 				outStr += outline + "\n"
 			}
-		case errline := <-stderrChan:
+		case errline, ok := <-stderrChan:
+			if !ok {
+				stderrChan = nil
+			}
 			if errline != "" {
 				errStr += errline + "\n"
 			}
