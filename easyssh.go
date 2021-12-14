@@ -11,6 +11,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
@@ -44,6 +46,9 @@ type (
 		Ciphers      []string
 		KeyExchanges []string
 		Fingerprint  string
+
+		// HTTP Proxy support
+		ProxyInfo func(req *http.Request) (*url.URL, error)
 
 		// Enable the use of insecure ciphers and key exchange methods.
 		// This enables the use of the the following insecure ciphers and key exchange methods:
@@ -203,7 +208,25 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		defer closer.Close()
 	}
 
-	// Enable proxy command
+	// HTTP proxy support
+	var proxyAddr string
+	if ssh_conf.ProxyInfo != nil {
+		req, _ := http.NewRequest("CONNECT", "https://"+ssh_conf.Server, nil)
+		proxyInfo, err := ssh_conf.ProxyInfo(req)
+		if proxyInfo == nil { // Try http:// as well
+			req, _ = http.NewRequest("CONNECT", "http://"+ssh_conf.Server, nil)
+			proxyInfo, err = ssh_conf.ProxyInfo(req)
+		}
+		if err == nil && proxyInfo != nil {
+			proxyAddr = proxyInfo.Host
+			if proxyInfo.User != nil {
+				password, _ := proxyInfo.User.Password()
+				proxyAddr = proxyInfo.User.Username() + ":" + password + "@" + proxyAddr
+			}
+		}
+	}
+
+	// Use bastion server
 	if ssh_conf.Proxy.Server != "" {
 		proxyConfig, closer := getSSHConfig(DefaultConfig{
 			User:              ssh_conf.Proxy.User,
@@ -220,8 +243,35 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		if closer != nil {
 			defer closer.Close()
 		}
+		var err error
+		var proxyClient *ssh.Client
+		var direct directDialer
 
-		proxyClient, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		if proxyAddr != "" {
+			var pConn net.Conn
+			var bConn ssh.Conn
+			var bChans <-chan ssh.NewChannel
+			var bReq <-chan *ssh.Request
+
+			bAddr := net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port)
+			direct = directDialer{}
+
+			registerDialerType()
+			pConn, err = newHTTPProxyConn(direct, proxyAddr, bAddr)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
+			}
+
+			bConn, bChans, bReq, err = ssh.NewClientConn(pConn, bAddr, proxyConfig)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error creating new client connection via proxy bastion: %s", err)
+			}
+			proxyClient = ssh.NewClient(bConn, bChans, bReq)
+		} else {
+			proxyClient, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		}
 		if err != nil {
 			return nil, nil, err
 		}
@@ -238,7 +288,31 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 
 		client = ssh.NewClient(ncc, chans, reqs)
 	} else {
-		client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		if proxyAddr != "" {
+			var pConn net.Conn
+			var bConn ssh.Conn
+			var bChans <-chan ssh.NewChannel
+			var bReq <-chan *ssh.Request
+
+			bAddr := net.JoinHostPort(ssh_conf.Server, ssh_conf.Port)
+			direct := directDialer{}
+
+			registerDialerType()
+			pConn, err = newHTTPProxyConn(direct, proxyAddr, bAddr)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error connecting to proxy: %s", err)
+			}
+
+			bConn, bChans, bReq, err = ssh.NewClientConn(pConn, bAddr, targetConfig)
+
+			if err != nil {
+				return nil, nil, fmt.Errorf("Error creating new client connection via proxy: %s", err)
+			}
+			client = ssh.NewClient(bConn, bChans, bReq)
+		} else {
+			client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		}
 		if err != nil {
 			return nil, nil, err
 		}

@@ -16,6 +16,7 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
 * [x] Support key path of user private key.
 * [x] Support Timeout for the TCP connection to establish.
 * [x] Support SSH ProxyCommand.
+* [x] Support HTTP Proxy traversal.
 
 ```bash
      +--------+       +----------+      +-----------+
@@ -28,6 +29,15 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
      | Laptop | <-->  | Firewall | <--> | FooServer |
      +--------+       +----------+      +-----------+
      192.168.1.5       121.1.2.3         10.10.29.68
+
+
+                         OR
+
+     +--------+       +-----------------+      +----------+       +-----------+
+     | Laptop | <-->  | Corporate Proxy | <--> | Jumphost |  <--> | FooServer |
+     +--------+       +-----------------+      +----------+       +-----------+
+     192.168.1.5       192.168.1.1:8080          121.1.2.3         10.10.29.68
+
 ```
 
 ## Usage
