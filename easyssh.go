@@ -291,11 +291,35 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 		session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
-	err = session.Start(command)
+	// err = session.Start(command)
+	// if err != nil {
+	// 	client.Close()
+	// 	session.Close()
+	// 	return stdoutChan, stderrChan, doneChan, errChan, err
+	// }
+
+	// StdinPipe for commands
+	stdin, err := session.StdinPipe()
 	if err != nil {
 		client.Close()
 		session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
+	}
+
+	// Start remote shell
+	err = session.Shell()
+	if err != nil {
+		client.Close()
+		session.Close()
+		return stdoutChan, stderrChan, doneChan, errChan, err
+	}
+
+	commands := []string{command}
+	for _, cmd := range commands {
+		_, err = fmt.Fprintf(stdin, "%s\n", cmd)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// combine outputs, create a line-by-line scanner
