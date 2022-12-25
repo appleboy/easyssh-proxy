@@ -1,7 +1,6 @@
 package easyssh
 
 import (
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -15,7 +14,7 @@ import (
 func getHostPublicKeyFile(keypath string) (ssh.PublicKey, error) {
 	var pubkey ssh.PublicKey
 	var err error
-	buf, err := ioutil.ReadFile(keypath)
+	buf, err := os.ReadFile(keypath)
 	if err != nil {
 		return nil, err
 	}

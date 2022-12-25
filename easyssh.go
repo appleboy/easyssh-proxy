@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -89,7 +88,7 @@ type (
 func getKeyFile(keypath, passphrase string) (ssh.Signer, error) {
 	var pubkey ssh.Signer
 	var err error
-	buf, err := ioutil.ReadFile(keypath)
+	buf, err := os.ReadFile(keypath)
 	if err != nil {
 		return nil, err
 	}
