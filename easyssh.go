@@ -6,6 +6,7 @@ package easyssh
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -246,6 +247,16 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	session, err := client.NewSession()
 	if err != nil {
 		return nil, nil, err
+	}
+
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          0,     // disable echoing
+		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+	}
+
+	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+		return nil, nil, errors.New("request for pseudo terminal failed: " + err.Error())
 	}
 
 	return session, client, nil

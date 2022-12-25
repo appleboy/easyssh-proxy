@@ -38,61 +38,60 @@ You can see `ssh`, `scp`, `ProxyCommand` on `examples` folder.
 
 See [example/ssh/ssh.go](./example/ssh/ssh.go)
 
-[embedmd]:# (example/ssh/ssh.go go)
 ```go
 package main
 
 import (
-	"fmt"
-	"time"
+  "fmt"
+  "time"
 
-	"github.com/appleboy/easyssh-proxy"
+  "github.com/appleboy/easyssh-proxy"
 )
 
 func main() {
-	// Create MakeConfig instance with remote username, server address and path to private key.
-	ssh := &easyssh.MakeConfig{
-		User:   "appleboy",
-		Server: "example.com",
-		// Optional key or Password without either we try to contact your agent SOCKET
-		// Password: "password",
-		// Paste your source content of private key
-		// Key: `-----BEGIN RSA PRIVATE KEY-----
-		// MIIEpAIBAAKCAQEA4e2D/qPN08pzTac+a8ZmlP1ziJOXk45CynMPtva0rtK/RB26
-		// 7XC9wlRna4b3Ln8ew3q1ZcBjXwD4ppbTlmwAfQIaZTGJUgQbdsO9YA==
-		// -----END RSA PRIVATE KEY-----
-		// `,
-		KeyPath: "/Users/username/.ssh/id_rsa",
-		Port:    "22",
-		Timeout: 60 * time.Second,
+  // Create MakeConfig instance with remote username, server address and path to private key.
+  ssh := &easyssh.MakeConfig{
+    User:   "appleboy",
+    Server: "example.com",
+    // Optional key or Password without either we try to contact your agent SOCKET
+    // Password: "password",
+    // Paste your source content of private key
+    // Key: `-----BEGIN RSA PRIVATE KEY-----
+    // MIIEpAIBAAKCAQEA4e2D/qPN08pzTac+a8ZmlP1ziJOXk45CynMPtva0rtK/RB26
+    // 7XC9wlRna4b3Ln8ew3q1ZcBjXwD4ppbTlmwAfQIaZTGJUgQbdsO9YA==
+    // -----END RSA PRIVATE KEY-----
+    // `,
+    KeyPath: "/Users/username/.ssh/id_rsa",
+    Port:    "22",
+    Timeout: 60 * time.Second,
 
-		// Parse PrivateKey With Passphrase
-		Passphrase: "1234",
+    // Parse PrivateKey With Passphrase
+    Passphrase: "1234",
 
-		// Optional fingerprint SHA256 verification
-		// Get Fingerprint: ssh.FingerprintSHA256(key)
-		// Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
+    // Optional fingerprint SHA256 verification
+    // Get Fingerprint: ssh.FingerprintSHA256(key)
+    // Fingerprint: "SHA256:mVPwvezndPv/ARoIadVY98vAC0g+P/5633yTC4d/wXE"
 
-		// Enable the use of insecure ciphers and key exchange methods.
-		// This enables the use of the the following insecure ciphers and key exchange methods:
-		// - aes128-cbc
-		// - aes192-cbc
-		// - aes256-cbc
-		// - 3des-cbc
-		// - diffie-hellman-group-exchange-sha256
-		// - diffie-hellman-group-exchange-sha1
-		// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
-		// UseInsecureCipher: true,
-	}
+    // Enable the use of insecure ciphers and key exchange methods.
+    // This enables the use of the the following insecure ciphers and key exchange methods:
+    // - aes128-cbc
+    // - aes192-cbc
+    // - aes256-cbc
+    // - 3des-cbc
+    // - diffie-hellman-group-exchange-sha256
+    // - diffie-hellman-group-exchange-sha1
+    // Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
+    // UseInsecureCipher: true,
+  }
 
-	// Call Run method with command you want to run on remote server.
-	stdout, stderr, done, err := ssh.Run("ls -al", 60*time.Second)
-	// Handle errors
-	if err != nil {
-		panic("Can't run remote command: " + err.Error())
-	} else {
-		fmt.Println("don is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
-	}
+  // Call Run method with command you want to run on remote server.
+  stdout, stderr, done, err := ssh.Run("ls -al", 60*time.Second)
+  // Handle errors
+  if err != nil {
+    panic("Can't run remote command: " + err.Error())
+  } else {
+    fmt.Println("don is :", done, "stdout is :", stdout, ";   stderr is :", stderr)
+  }
 }
 ```
 
@@ -100,35 +99,34 @@ func main() {
 
 See [example/scp/scp.go](./example/scp/scp.go)
 
-[embedmd]:# (example/scp/scp.go go)
 ```go
 package main
 
 import (
-	"fmt"
+  "fmt"
 
-	"github.com/appleboy/easyssh-proxy"
+  "github.com/appleboy/easyssh-proxy"
 )
 
 func main() {
-	// Create MakeConfig instance with remote username, server address and path to private key.
-	ssh := &easyssh.MakeConfig{
-		User:     "appleboy",
-		Server:   "example.com",
-		Password: "123qwe",
-		Port:     "22",
-	}
+  // Create MakeConfig instance with remote username, server address and path to private key.
+  ssh := &easyssh.MakeConfig{
+    User:     "appleboy",
+    Server:   "example.com",
+    Password: "123qwe",
+    Port:     "22",
+  }
 
-	// Call Scp method with file you want to upload to remote server.
-	// Please make sure the `tmp` floder exists.
-	err := ssh.Scp("/root/source.csv", "/tmp/target.csv")
+  // Call Scp method with file you want to upload to remote server.
+  // Please make sure the `tmp` floder exists.
+  err := ssh.Scp("/root/source.csv", "/tmp/target.csv")
 
-	// Handle errors
-	if err != nil {
-		panic("Can't run remote command: " + err.Error())
-	} else {
-		fmt.Println("success")
-	}
+  // Handle errors
+  if err != nil {
+    panic("Can't run remote command: " + err.Error())
+  } else {
+    fmt.Println("success")
+  }
 }
 ```
 
@@ -136,68 +134,66 @@ func main() {
 
 See [example/proxy/proxy.go](./example/proxy/proxy.go)
 
-[embedmd]:# (example/proxy/proxy.go go /\tssh :=/ /\t}$/)
 ```go
-	ssh := &easyssh.MakeConfig{
-		User:    "drone-scp",
-		Server:  "localhost",
-		Port:    "22",
-		KeyPath: "./tests/.ssh/id_rsa",
-		Proxy: easyssh.DefaultConfig{
-			User:    "drone-scp",
-			Server:  "localhost",
-			Port:    "22",
-			KeyPath: "./tests/.ssh/id_rsa",
-		},
-	}
+  ssh := &easyssh.MakeConfig{
+    User:    "drone-scp",
+    Server:  "localhost",
+    Port:    "22",
+    KeyPath: "./tests/.ssh/id_rsa",
+    Proxy: easyssh.DefaultConfig{
+      User:    "drone-scp",
+      Server:  "localhost",
+      Port:    "22",
+      KeyPath: "./tests/.ssh/id_rsa",
+    },
+  }
 ```
 
 ### SSH Stream Log
 
 See [example/stream/stream.go](./example/stream/stream.go)
 
-[embedmd]:# (example/stream/stream.go go /func/ /^}$/)
 ```go
 func main() {
-	// Create MakeConfig instance with remote username, server address and path to private key.
-	ssh := &easyssh.MakeConfig{
-		Server:  "localhost",
-		User:    "drone-scp",
-		KeyPath: "./tests/.ssh/id_rsa",
-		Port:    "22",
-		Timeout: 60 * time.Second,
-	}
+  // Create MakeConfig instance with remote username, server address and path to private key.
+  ssh := &easyssh.MakeConfig{
+    Server:  "localhost",
+    User:    "drone-scp",
+    KeyPath: "./tests/.ssh/id_rsa",
+    Port:    "22",
+    Timeout: 60 * time.Second,
+  }
 
-	// Call Run method with command you want to run on remote server.
-	stdoutChan, stderrChan, doneChan, errChan, err := ssh.Stream("for i in {1..5}; do echo ${i}; sleep 1; done; exit 2;", 60*time.Second)
-	// Handle errors
-	if err != nil {
-		panic("Can't run remote command: " + err.Error())
-	} else {
-		// read from the output channel until the done signal is passed
-		isTimeout := true
-	loop:
-		for {
-			select {
-			case isTimeout = <-doneChan:
-				break loop
-			case outline := <-stdoutChan:
-				fmt.Println("out:", outline)
-			case errline := <-stderrChan:
-				fmt.Println("err:", errline)
-			case err = <-errChan:
-			}
-		}
+  // Call Run method with command you want to run on remote server.
+  stdoutChan, stderrChan, doneChan, errChan, err := ssh.Stream("for i in {1..5}; do echo ${i}; sleep 1; done; exit 2;", 60*time.Second)
+  // Handle errors
+  if err != nil {
+    panic("Can't run remote command: " + err.Error())
+  } else {
+    // read from the output channel until the done signal is passed
+    isTimeout := true
+  loop:
+    for {
+      select {
+      case isTimeout = <-doneChan:
+        break loop
+      case outline := <-stdoutChan:
+        fmt.Println("out:", outline)
+      case errline := <-stderrChan:
+        fmt.Println("err:", errline)
+      case err = <-errChan:
+      }
+    }
 
-		// get exit code or command error.
-		if err != nil {
-			fmt.Println("err: " + err.Error())
-		}
+    // get exit code or command error.
+    if err != nil {
+      fmt.Println("err: " + err.Error())
+    }
 
-		// command time out
-		if !isTimeout {
-			fmt.Println("Error: command timeout")
-		}
-	}
+    // command time out
+    if !isTimeout {
+      fmt.Println("Error: command timeout")
+    }
+  }
 }
 ```
