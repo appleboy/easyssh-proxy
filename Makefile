@@ -7,53 +7,15 @@ all: lint
 
 fmt:
 	@hash gofumpt > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u mvdan.cc/gofumpt; \
+		$(GO) install mvdan.cc/gofumpt; \
 	fi
 	$(GOFMT) -w $(SOURCES)
 
 vet:
 	$(GO) vet $(PACKAGES)
 
-lint:
-	@hash revive > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/mgechev/revive; \
-	fi
-	revive -config .revive.toml ./... || exit 1
-
-.PHONY: misspell-check
-misspell-check:
-	@hash misspell > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/client9/misspell/cmd/misspell; \
-	fi
-	misspell -error $(SOURCES)
-
-.PHONY: misspell
-misspell:
-	@hash misspell > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/client9/misspell/cmd/misspell; \
-	fi
-	misspell -w $(SOURCES)
-
-.PHONY: fmt-check
-fmt-check:
-	@hash gofumpt > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u mvdan.cc/gofumpt; \
-	fi
-	@diff=$$($(GOFMT) -d $(SOURCES)); \
-	if [ -n "$$diff" ]; then \
-		echo "Please run 'make fmt' and commit the result:"; \
-		echo "$${diff}"; \
-		exit 1; \
-	fi;
-
-test: fmt-check
+test:
 	@$(GO) test -v -cover -coverprofile coverage.txt $(PACKAGES) && echo "\n==>\033[32m Ok\033[m\n" || exit 1
-
-embedmd:
-	@hash embedmd > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		go get -u github.com/campoy/embedmd; \
-	fi
-	embedmd -d *.md
 
 clean:
 	go clean -x -i ./...
@@ -74,6 +36,3 @@ ssh-server:
 	sed -i 's/^#PubkeyAuthentication yes/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
 	sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config
 	./tests/entrypoint.sh /usr/sbin/sshd -D &
-
-version:
-	@echo $(VERSION)
