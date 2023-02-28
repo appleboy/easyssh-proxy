@@ -96,6 +96,7 @@ func TestPrivateKeyAndPassword(t *testing.T) {
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 
+	// provide correct password and wrong private key
 	ssh = &MakeConfig{
 		Server:   "localhost",
 		User:     "drone-scp",
@@ -110,6 +111,7 @@ func TestPrivateKeyAndPassword(t *testing.T) {
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 
+	// provide wrong password and correct private key
 	ssh = &MakeConfig{
 		Server:   "localhost",
 		User:     "drone-scp",
