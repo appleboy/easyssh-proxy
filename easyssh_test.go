@@ -80,6 +80,53 @@ func TestRunCommandWithFingerprint(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestPrivateKeyAndPassword(t *testing.T) {
+	// provide password and ssh private key
+	ssh := &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "1234",
+		KeyPath:  "./tests/.ssh/id_rsa",
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami")
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+
+	// provide correct password and wrong private key
+	ssh = &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "1234",
+		KeyPath:  "./tests/.ssh/id_rsa.pub",
+	}
+
+	outStr, errStr, isTimeout, err = ssh.Run("whoami")
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+
+	// provide wrong password and correct private key
+	ssh = &MakeConfig{
+		Server:   "localhost",
+		User:     "drone-scp",
+		Port:     "22",
+		Password: "123456",
+		KeyPath:  "./tests/.ssh/id_rsa",
+	}
+
+	outStr, errStr, isTimeout, err = ssh.Run("whoami")
+	assert.Equal(t, "drone-scp\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+}
+
 func TestRunCommand(t *testing.T) {
 	// wrong key
 	ssh := &MakeConfig{
