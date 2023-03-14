@@ -389,6 +389,7 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	targetFile := filepath.Base(etargetFile)
 
 	src, srcErr := os.Open(sourceFile)
+	defer src.Close()
 
 	if srcErr != nil {
 		return srcErr
