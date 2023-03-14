@@ -377,8 +377,8 @@ loop:
 	return outStr, errStr, isTimeout, err
 }
 
-// Scp uploads sourceFile to remote machine like native scp console app.
-func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
+// WriteFile reads size bytes from the reader and writes them to a file on the remote machine
+func (ssh_conf *MakeConfig) WriteFile(reader io.Reader, size int64, etargetFile string) error {
 	session, client, err := ssh_conf.Connect()
 	if err != nil {
 		return err
@@ -388,31 +388,19 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 
 	targetFile := filepath.Base(etargetFile)
 
-	src, srcErr := os.Open(sourceFile)
-
-	if srcErr != nil {
-		return srcErr
-	}
-
-	srcStat, statErr := src.Stat()
-
-	if statErr != nil {
-		return statErr
-	}
-
 	w, err := session.StdinPipe()
 	if err != nil {
 		return err
 	}
 
 	copyF := func() error {
-		_, err := fmt.Fprintln(w, "C0644", srcStat.Size(), targetFile)
+		_, err := fmt.Fprintln(w, "C0644", size, targetFile)
 		if err != nil {
 			return err
 		}
 
-		if srcStat.Size() > 0 {
-			_, err = io.Copy(w, src)
+		if size > 0 {
+			_, err = io.Copy(w, reader)
 			if err != nil {
 				return err
 			}
@@ -439,4 +427,28 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 
 	err = <-copyErrC
 	return err
+}
+
+// Scp uploads sourceFile to remote machine like native scp console app.
+func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
+	session, client, err := ssh_conf.Connect()
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+	defer session.Close()
+
+	src, srcErr := os.Open(sourceFile)
+
+	if srcErr != nil {
+		return srcErr
+	}
+	defer src.Close()
+
+	srcStat, statErr := src.Stat()
+
+	if statErr != nil {
+		return statErr
+	}
+	return ssh_conf.WriteFile(src, srcStat.Size(), etargetFile)
 }
