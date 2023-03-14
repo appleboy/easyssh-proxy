@@ -429,6 +429,7 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	copyErrC := make(chan error, 1)
 	go func() {
 		defer w.Close()
+		defer src.Close()
 		copyErrC <- copyF()
 	}()
 
