@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ScaleFT/sshkeys v1.2.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.7.0
 )
 
