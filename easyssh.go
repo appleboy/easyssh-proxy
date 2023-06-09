@@ -22,6 +22,14 @@ import (
 
 var defaultTimeout = 60 * time.Second
 
+type Protocol string
+
+const (
+	PROTOCOL_TCP  Protocol = "tcp"
+	PROTOCOL_TCP4 Protocol = "tcp4"
+	PROTOCOL_TCP6 Protocol = "tcp6"
+)
+
 type (
 	// MakeConfig Contains main authority information.
 	// User field should be a name of user on remote server (ex. john in ssh john@example.com).
@@ -36,6 +44,7 @@ type (
 		Key          string
 		KeyPath      string
 		Port         string
+		Protocol     Protocol
 		Passphrase   string
 		Password     string
 		Timeout      time.Duration
@@ -63,6 +72,7 @@ type (
 		Key          string
 		KeyPath      string
 		Port         string
+		Protocol     Protocol
 		Passphrase   string
 		Password     string
 		Timeout      time.Duration
@@ -186,6 +196,14 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	var client *ssh.Client
 	var err error
 
+	// Default protocol is: tcp.
+	if ssh_conf.Protocol == "" {
+		ssh_conf.Protocol = PROTOCOL_TCP
+	}
+	if ssh_conf.Proxy.Protocol == "" {
+		ssh_conf.Proxy.Protocol = PROTOCOL_TCP
+	}
+
 	targetConfig, closer := getSSHConfig(DefaultConfig{
 		User:              ssh_conf.User,
 		Key:               ssh_conf.Key,
@@ -220,12 +238,12 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			defer closer.Close()
 		}
 
-		proxyClient, err := ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		proxyClient, err := ssh.Dial(string(ssh_conf.Proxy.Protocol), net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		conn, err := proxyClient.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
+		conn, err := proxyClient.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -237,7 +255,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 
 		client = ssh.NewClient(ncc, chans, reqs)
 	} else {
-		client, err = ssh.Dial("tcp", net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		client, err = ssh.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
 		if err != nil {
 			return nil, nil, err
 		}
