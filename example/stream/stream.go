@@ -22,30 +22,29 @@ func main() {
 	// Handle errors
 	if err != nil {
 		panic("Can't run remote command: " + err.Error())
-	} else {
-		// read from the output channel until the done signal is passed
-		isTimeout := true
-	loop:
-		for {
-			select {
-			case isTimeout = <-doneChan:
-				break loop
-			case outline := <-stdoutChan:
-				fmt.Println("out:", outline)
-			case errline := <-stderrChan:
-				fmt.Println("err:", errline)
-			case err = <-errChan:
-			}
+	}
+	// read from the output channel until the done signal is passed
+	isTimeout := true
+loop:
+	for {
+		select {
+		case isTimeout = <-doneChan:
+			break loop
+		case outline := <-stdoutChan:
+			fmt.Println("out:", outline)
+		case errline := <-stderrChan:
+			fmt.Println("err:", errline)
+		case err = <-errChan:
 		}
+	}
 
-		// get exit code or command error.
-		if err != nil {
-			fmt.Println("err: " + err.Error())
-		}
+	// get exit code or command error.
+	if err != nil {
+		panic("err: " + err.Error())
+	}
 
-		// command time out
-		if !isTimeout {
-			fmt.Println("Error: command timeout")
-		}
+	// command time out
+	if !isTimeout {
+		fmt.Println("Error: command timeout")
 	}
 }

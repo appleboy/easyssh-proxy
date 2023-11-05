@@ -24,11 +24,8 @@ func main() {
 	// Call Scp method with file you want to upload to remote server.
 	// Please make sure the `tmp` floder exists.
 	err := ssh.Scp("/root/source.csv", "/tmp/target.csv")
-
-	// Handle errors
 	if err != nil {
 		panic("Can't run remote command: " + err.Error())
-	} else {
-		fmt.Println("success")
 	}
+	fmt.Println("success")
 }
