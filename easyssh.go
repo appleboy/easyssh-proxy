@@ -63,6 +63,9 @@ type (
 		// - diffie-hellman-group-exchange-sha1
 		// Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
 		UseInsecureCipher bool
+
+		// RequestPty requests a pseudo-terminal from the server.
+		RequestPty bool
 	}
 
 	// DefaultConfig for ssh proxy config
@@ -264,6 +267,19 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 	session, err := client.NewSession()
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// Request a pseudo-terminal if this option is set
+	if ssh_conf.RequestPty {
+		modes := ssh.TerminalModes{
+			ssh.ECHO:          0,     // disable echoing
+			ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+			ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+		}
+		if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+			session.Close()
+			return nil, nil, err
+		}
 	}
 
 	return session, client, nil
