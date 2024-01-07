@@ -36,6 +36,8 @@ ssh-server:
 	cat tests/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 	cat tests/.ssh/test.pub >> /root/.ssh/authorized_keys
 	chmod 600 /root/.ssh/authorized_keys
+	# Append the following entry to run ALL command without a password for a user named drone-scp:
+	echo "drone-scp ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 	# install ssh and start server
 	apk add --update openssh openrc
 	rm -rf /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key
