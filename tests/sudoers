@@ -1,0 +1,2 @@
+Defaults        requiretty
+drone-scp ALL=(ALL) NOPASSWD:ALL
