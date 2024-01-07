@@ -479,3 +479,20 @@ func TestRootAccount(t *testing.T) {
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
+
+// TestSudoCommand
+func TestSudoCommand(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:     "localhost",
+		User:       "drone-scp",
+		Port:       "22",
+		KeyPath:    "./tests/.ssh/id_rsa",
+		RequestPty: true,
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run(`sudo su - -c "whoami"`)
+	assert.Equal(t, "root\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+}
