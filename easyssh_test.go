@@ -463,3 +463,19 @@ func TestSCPCommandUseInsecureCipher(t *testing.T) {
 		t.Fatalf("SCP-error: %v", err)
 	}
 }
+
+// TestRootAccount test root account
+func TestRootAccount(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:  "localhost",
+		User:    "root",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami")
+	assert.Equal(t, "root\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.True(t, isTimeout)
+	assert.NoError(t, err)
+}
