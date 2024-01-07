@@ -30,6 +30,12 @@ ssh-server:
 	cat tests/.ssh/test.pub >> /home/drone-scp/.ssh/authorized_keys
 	chmod 600 /home/drone-scp/.ssh/authorized_keys
 	chown -R drone-scp /home/drone-scp/.ssh
+	# add public key to root user
+	mkdir -p /root/.ssh
+	chmod 700 /root/.ssh
+	cat tests/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+	cat tests/.ssh/test.pub >> /root/.ssh/authorized_keys
+	chmod 600 /root/.ssh/authorized_keys
 	# install ssh and start server
 	apk add --update openssh openrc
 	rm -rf /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key
