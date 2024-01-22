@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,8 +22,10 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 )
 
-var defaultTimeout = 60 * time.Second
-var defaultBufferSize = 4096
+var (
+	defaultTimeout    = 60 * time.Second
+	defaultBufferSize = 4096
+)
 
 type Protocol string
 
@@ -367,7 +370,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 				if errors.Is(err, io.EOF) {
 					break
 				}
-				stdoutChan <- text
+				stdoutChan <- strings.TrimRight(text, "\n")
 			}
 			resWg.Done()
 		}()
@@ -380,7 +383,7 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 				if errors.Is(err, io.EOF) {
 					break
 				}
-				stderrChan <- text
+				stderrChan <- strings.TrimRight(text, "\n")
 			}
 			resWg.Done()
 		}()
