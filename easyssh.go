@@ -6,6 +6,7 @@ package easyssh
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,6 +22,7 @@ import (
 )
 
 var defaultTimeout = 60 * time.Second
+var defaultBufferSize = 4096
 
 type Protocol string
 
@@ -49,6 +51,7 @@ type (
 		Password     string
 		Timeout      time.Duration
 		Proxy        DefaultConfig
+		ReadBuffSize int
 		Ciphers      []string
 		KeyExchanges []string
 		Fingerprint  string
@@ -324,10 +327,23 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	// combine outputs, create a line-by-line scanner
 	stdoutReader := io.MultiReader(outReader)
 	stderrReader := io.MultiReader(errReader)
-	stdoutScanner := bufio.NewScanner(stdoutReader)
-	stderrScanner := bufio.NewScanner(stderrReader)
 
-	go func(stdoutScanner, stderrScanner *bufio.Scanner, stdoutChan, stderrChan chan string, doneChan chan bool, errChan chan error) {
+	var stdoutScanner *bufio.Reader
+	var stderrScanner *bufio.Reader
+
+	if ssh_conf.ReadBuffSize > 0 {
+		stdoutScanner = bufio.NewReaderSize(stdoutReader, ssh_conf.ReadBuffSize)
+	} else {
+		stdoutScanner = bufio.NewReaderSize(stdoutReader, defaultBufferSize)
+	}
+
+	if ssh_conf.ReadBuffSize > 0 {
+		stderrScanner = bufio.NewReaderSize(stderrReader, ssh_conf.ReadBuffSize)
+	} else {
+		stderrScanner = bufio.NewReaderSize(stderrReader, defaultBufferSize)
+	}
+
+	go func(stdoutScanner, stderrScanner *bufio.Reader, stdoutChan, stderrChan chan string, doneChan chan bool, errChan chan error) {
 		defer close(doneChan)
 		defer close(errChan)
 		defer client.Close()
@@ -345,16 +361,26 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 
 		go func() {
 			defer close(stdoutChan)
-			for stdoutScanner.Scan() {
-				stdoutChan <- stdoutScanner.Text()
+			for {
+				var text string
+				text, err = stdoutScanner.ReadString('\n')
+				if errors.Is(err, io.EOF) {
+					break
+				}
+				stdoutChan <- text
 			}
 			resWg.Done()
 		}()
 
 		go func() {
 			defer close(stderrChan)
-			for stderrScanner.Scan() {
-				stderrChan <- stderrScanner.Text()
+			for {
+				var text string
+				text, err = stderrScanner.ReadString('\n')
+				if errors.Is(err, io.EOF) {
+					break
+				}
+				stderrChan <- text
 			}
 			resWg.Done()
 		}()
