@@ -8,14 +8,18 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # all history for all branches and tags
+
       - name: Setup go
         uses: actions/setup-go@v5
         with:
-          go-version: "^1.21"
-      - name: Checkout repository
-        uses: actions/checkout@v3
+          go-version-file: go.mod
+          check-latest: true
       - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: latest
           args: --verbose
@@ -24,8 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     container: golang:1.21-alpine
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # all history for all branches and tags
 
       - name: setup sshd server
         run: |
