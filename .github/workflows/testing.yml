@@ -26,7 +26,7 @@ jobs:
 
   testing:
     runs-on: ubuntu-latest
-    container: golang:1.21-alpine
+    container: golang:1.23-alpine
     steps:
       - name: Checkout
         uses: actions/checkout@v4
