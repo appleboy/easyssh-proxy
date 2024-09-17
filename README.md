@@ -1,7 +1,7 @@
 # easyssh-proxy
 
 [![GoDoc](https://godoc.org/github.com/appleboy/easyssh-proxy?status.svg)](https://pkg.go.dev/github.com/appleboy/easyssh-proxy)
-[![Lint and Testing](https://github.com/appleboy/easyssh-proxy/actions/workflows/lint.yml/badge.svg)](https://github.com/appleboy/easyssh-proxy/actions/workflows/lint.yml)
+[![Lint and Testing](https://github.com/appleboy/easyssh-proxy/actions/workflows/testing.yml/badge.svg)](https://github.com/appleboy/easyssh-proxy/actions/workflows/testing.yml)
 [![codecov](https://codecov.io/gh/appleboy/easyssh-proxy/branch/master/graph/badge.svg)](https://codecov.io/gh/appleboy/easyssh-proxy)
 [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/easyssh-proxy)](https://goreportcard.com/report/github.com/appleboy/easyssh-proxy)
 [![Sourcegraph](https://sourcegraph.com/github.com/appleboy/easyssh-proxy/-/badge.svg)](https://sourcegraph.com/github.com/appleboy/easyssh-proxy?badge)
