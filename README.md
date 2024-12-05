@@ -36,7 +36,7 @@ You can see `ssh`, `scp`, `ProxyCommand` on `examples` folder.
 
 ### ssh
 
-See [example/ssh/ssh.go](./example/ssh/ssh.go)
+See [example/ssh/ssh.go](./_example/ssh/ssh.go)
 
 ```go
 package main
@@ -97,7 +97,7 @@ func main() {
 
 ### scp
 
-See [example/scp/scp.go](./example/scp/scp.go)
+See [example/scp/scp.go](./_example/scp/scp.go)
 
 ```go
 package main
@@ -132,7 +132,7 @@ func main() {
 
 ### SSH ProxyCommand
 
-See [example/proxy/proxy.go](./example/proxy/proxy.go)
+See [example/proxy/proxy.go](./_example/proxy/proxy.go)
 
 ```go
   ssh := &easyssh.MakeConfig{
@@ -151,7 +151,7 @@ See [example/proxy/proxy.go](./example/proxy/proxy.go)
 
 ### SSH Stream Log
 
-See [example/stream/stream.go](./example/stream/stream.go)
+See [example/stream/stream.go](./_example/stream/stream.go)
 
 ```go
 func main() {
