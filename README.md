@@ -32,7 +32,51 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
 
 ## Usage
 
-You can see `ssh`, `scp`, `ProxyCommand` on `examples` folder.
+You can see detailed examples of the `ssh`, `scp`, `Proxy`, and `stream` commands inside the [`examples`](./_examples/) folder.
+
+### MakeConfig
+
+All functionality provided by this package is accessed via methods of the MakeConfig struct. 
+
+```go
+  ssh := &easyssh.MakeConfig{
+    User:    "drone-scp",
+    Server:  "localhost",
+    Port:    "22",
+    KeyPath: "./tests/.ssh/id_rsa",
+    Timeout: 60 * time.Second,
+    Proxy: easyssh.DefaultConfig{
+      User:    "drone-scp",
+      Server:  "localhost",
+      Port:    "22",
+      KeyPath: "./tests/.ssh/id_rsa",
+      Timeout: 60 * time.Second,
+    },
+  }
+
+  stdout, stderr, done, err := ssh.Run("ls -al", 60*time.Second)
+  err = ssh.Scp("/root/source.csv", "/tmp/target.csv")
+  stdoutChan, stderrChan, doneChan, errChan, err = ssh.Stream("for i in {1..5}; do echo ${i}; sleep 1; done; exit 2;", 60*time.Second)
+```
+
+| property | description |
+| -------------- | --------------- |
+| user | The SSH user to be logged in with  |
+| Server | The IP or hostname pointing of the server |
+| Key | A string containing the private key to be used when making the connection |
+| KeyPath | The path pointing to the SSH key file to be used when making the connection |
+| Port | The port to use when connecting to the SSH daemon of the server |
+| Protocol | The tcp protocol to be used: `"tcp", "tcp4" "tcp6"` |
+| Passphrase | The Passphrase to unlock the provided SSH key (leave blank if no Passphrase is required) |
+| Password | The Password to use to login the specified user |
+| Timeout | The length of time to wait before timing out the request |
+| Proxy | An additional set of configuration params that will be used to SSH into an additional server via the server configured in this top-level block |
+| Ciphers | An array of ciphers (e.g. aes256-ctr) to enable for the SSH connection |
+| KeyExchanges | An array of key exchanges (e.g. ecdh-sha2-nistp384) to enable for the SSH connection |
+| Fingerprint | The expected fingerprint to be returned by the SSH server, results in a fingerprint error if they do not match |
+| UseInsecureCipher | Enables the use of insecure ciphers and key exchanges that are insecure and can lead to compromise |
+
+NOTE: Please view the reference documentation for the most up to date properties of [MakeConfig](https://pkg.go.dev/github.com/appleboy/easyssh-proxy#MakeConfig) and [DefaultConfig](https://pkg.go.dev/github.com/appleboy/easyssh-proxy#DefaultConfig)
 
 ### ssh
 
@@ -140,14 +184,20 @@ See [examples/proxy/proxy.go](./_examples/proxy/proxy.go)
     Server:  "localhost",
     Port:    "22",
     KeyPath: "./tests/.ssh/id_rsa",
+    Timeout: 60 * time.Second,
     Proxy: easyssh.DefaultConfig{
       User:    "drone-scp",
       Server:  "localhost",
       Port:    "22",
       KeyPath: "./tests/.ssh/id_rsa",
+      Timeout: 60 * time.Second,
     },
   }
 ```
+
+NOTE: properties for the Proxy connection are not inherited from the Jumphost. You must explicitly specify them in the DefaultConfig struct. 
+
+e.g. A custom `Timeout` length must be specified for both the Jumphost (intermediary server) and the destination server.
 
 ### SSH Stream Log
 
