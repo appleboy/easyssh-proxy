@@ -42,22 +42,17 @@ All functionality provided by this package is accessed via methods of the MakeCo
   ssh := &easyssh.MakeConfig{
     User:    "drone-scp",
     Server:  "localhost",
-    Port:    "22",
     KeyPath: "./tests/.ssh/id_rsa",
+    Port:    "22",
     Timeout: 60 * time.Second,
-    Proxy: easyssh.DefaultConfig{
-      User:    "drone-scp",
-      Server:  "localhost",
-      Port:    "22",
-      KeyPath: "./tests/.ssh/id_rsa",
-      Timeout: 60 * time.Second,
-    },
   }
 
   stdout, stderr, done, err := ssh.Run("ls -al", 60*time.Second)
   err = ssh.Scp("/root/source.csv", "/tmp/target.csv")
   stdoutChan, stderrChan, doneChan, errChan, err = ssh.Stream("for i in {1..5}; do echo ${i}; sleep 1; done; exit 2;", 60*time.Second)
 ```
+
+MakeConfig takes in the following properties:
 
 | property | description |
 | -------------- | --------------- |
@@ -74,7 +69,7 @@ All functionality provided by this package is accessed via methods of the MakeCo
 | Ciphers | An array of ciphers (e.g. aes256-ctr) to enable for the SSH connection |
 | KeyExchanges | An array of key exchanges (e.g. ecdh-sha2-nistp384) to enable for the SSH connection |
 | Fingerprint | The expected fingerprint to be returned by the SSH server, results in a fingerprint error if they do not match |
-| UseInsecureCipher | Enables the use of insecure ciphers and key exchanges that are insecure and can lead to compromise |
+| UseInsecureCipher | Enables the use of insecure ciphers and key exchanges that are insecure and can lead to compromise, [see ssh](#ssh) |
 
 NOTE: Please view the reference documentation for the most up to date properties of [MakeConfig](https://pkg.go.dev/github.com/appleboy/easyssh-proxy#MakeConfig) and [DefaultConfig](https://pkg.go.dev/github.com/appleboy/easyssh-proxy#DefaultConfig)
 
@@ -195,7 +190,7 @@ See [examples/proxy/proxy.go](./_examples/proxy/proxy.go)
   }
 ```
 
-NOTE: properties for the Proxy connection are not inherited from the Jumphost. You must explicitly specify them in the DefaultConfig struct. 
+NOTE: Properties for the Proxy connection are not inherited from the Jumphost. You must explicitly specify them in the DefaultConfig struct. 
 
 e.g. A custom `Timeout` length must be specified for both the Jumphost (intermediary server) and the destination server.
 
