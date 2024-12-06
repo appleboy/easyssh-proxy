@@ -1,6 +1,7 @@
 package easyssh
 
 import (
+	"context"
 	"os"
 	"os/user"
 	"path"
@@ -20,7 +21,6 @@ func getHostPublicKeyFile(keypath string) (ssh.PublicKey, error) {
 	}
 
 	pubkey, _, _, _, err = ssh.ParseAuthorizedKey(buf)
-
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func TestRunCommand(t *testing.T) {
 	assert.Equal(t, "", errStr)
 	assert.False(t, isTimeout)
 	assert.Error(t, err)
-	assert.Equal(t, "Run Command Timeout", err.Error())
+	assert.Equal(t, "Run Command Timeout: "+context.DeadlineExceeded.Error(), err.Error())
 
 	// test exit code
 	outStr, errStr, isTimeout, err = ssh.Run("exit 1")
@@ -495,4 +495,20 @@ func TestSudoCommand(t *testing.T) {
 	assert.Equal(t, "", errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
+}
+
+func TestCommandTimeout(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:  "localhost",
+		User:    "root",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+	}
+
+	outStr, errStr, isTimeout, err := ssh.Run("whoami; sleep 2", 1*time.Second)
+	assert.Equal(t, "root\n", outStr)
+	assert.Equal(t, "", errStr)
+	assert.False(t, isTimeout)
+	assert.NotNil(t, err)
+	assert.Equal(t, "Run Command Timeout: "+context.DeadlineExceeded.Error(), err.Error())
 }

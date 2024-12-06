@@ -6,6 +6,7 @@ package easyssh
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -357,7 +358,8 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 		if len(timeout) > 0 {
 			executeTimeout = timeout[0]
 		}
-		timeoutChan := time.After(executeTimeout)
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), executeTimeout)
+		defer cancel()
 		res := make(chan struct{}, 1)
 		var resWg sync.WaitGroup
 		resWg.Add(2)
@@ -398,8 +400,8 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 		case <-res:
 			errChan <- session.Wait()
 			doneChan <- true
-		case <-timeoutChan:
-			errChan <- fmt.Errorf("Run Command Timeout")
+		case <-ctxTimeout.Done():
+			errChan <- fmt.Errorf("Run Command Timeout: %v", ctxTimeout.Err())
 			doneChan <- false
 		}
 	}(stdoutScanner, stderrScanner, stdoutChan, stderrChan, doneChan, errChan)
