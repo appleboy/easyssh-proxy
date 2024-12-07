@@ -190,9 +190,9 @@ See [examples/proxy/proxy.go](./_examples/proxy/proxy.go)
   }
 ```
 
-NOTE: Properties for the Proxy connection are not inherited from the Jumphost. You must explicitly specify them in the DefaultConfig struct.
+注意：代理連接的屬性不會從跳板機繼承。您必須在 DefaultConfig 結構體中明確指定它們。
 
-e.g. A custom `Timeout` length must be specified for both the Jumphost (intermediary server) and the destination server.
+例如，必須為跳板機（中介伺服器）和目標伺服器分別指定自定義的 `Timeout` 長度。
 
 ### SSH Stream Log
 
