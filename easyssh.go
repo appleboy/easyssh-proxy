@@ -301,12 +301,12 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	stderrChan := make(chan string)
 	doneChan := make(chan bool)
 	errChan := make(chan error)
-
 	// connect to remote host
 	session, client, err := ssh_conf.Connect()
 	if err != nil {
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
+	session.Stdin = os.Stdin
 	// defer session.Close()
 	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
