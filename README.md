@@ -6,6 +6,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/appleboy/easyssh-proxy)](https://goreportcard.com/report/github.com/appleboy/easyssh-proxy)
 [![Sourcegraph](https://sourcegraph.com/github.com/appleboy/easyssh-proxy/-/badge.svg)](https://sourcegraph.com/github.com/appleboy/easyssh-proxy?badge)
 
+[繁體中文](./README.zh-tw.md)
+
 easyssh-proxy provides a simple implementation of some SSH protocol features in Go.
 
 ## Feature
