@@ -12,10 +12,10 @@ easyssh-proxy provides a simple implementation of some SSH protocol features in 
 
 This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but add some features as the following.
 
-* [x] Support plain text of user private key.
-* [x] Support key path of user private key.
-* [x] Support Timeout for the TCP connection to establish.
-* [x] Support SSH ProxyCommand.
+- [x] Support plain text of user private key.
+- [x] Support key path of user private key.
+- [x] Support Timeout for the TCP connection to establish.
+- [x] Support SSH ProxyCommand.
 
 ```bash
      +--------+       +----------+      +-----------+
@@ -36,7 +36,7 @@ You can see detailed examples of the `ssh`, `scp`, `Proxy`, and `stream` command
 
 ### MakeConfig
 
-All functionality provided by this package is accessed via methods of the MakeConfig struct. 
+All functionality provided by this package is accessed via methods of the MakeConfig struct.
 
 ```go
   ssh := &easyssh.MakeConfig{
@@ -54,22 +54,22 @@ All functionality provided by this package is accessed via methods of the MakeCo
 
 MakeConfig takes in the following properties:
 
-| property | description |
-| -------------- | --------------- |
-| user | The SSH user to be logged in with  |
-| Server | The IP or hostname pointing of the server |
-| Key | A string containing the private key to be used when making the connection |
-| KeyPath | The path pointing to the SSH key file to be used when making the connection |
-| Port | The port to use when connecting to the SSH daemon of the server |
-| Protocol | The tcp protocol to be used: `"tcp", "tcp4" "tcp6"` |
-| Passphrase | The Passphrase to unlock the provided SSH key (leave blank if no Passphrase is required) |
-| Password | The Password to use to login the specified user |
-| Timeout | The length of time to wait before timing out the request |
-| Proxy | An additional set of configuration params that will be used to SSH into an additional server via the server configured in this top-level block |
-| Ciphers | An array of ciphers (e.g. aes256-ctr) to enable for the SSH connection |
-| KeyExchanges | An array of key exchanges (e.g. ecdh-sha2-nistp384) to enable for the SSH connection |
-| Fingerprint | The expected fingerprint to be returned by the SSH server, results in a fingerprint error if they do not match |
-| UseInsecureCipher | Enables the use of insecure ciphers and key exchanges that are insecure and can lead to compromise, [see ssh](#ssh) |
+| property          | description                                                                                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| user              | The SSH user to be logged in with                                                                                                              |
+| Server            | The IP or hostname pointing of the server                                                                                                      |
+| Key               | A string containing the private key to be used when making the connection                                                                      |
+| KeyPath           | The path pointing to the SSH key file to be used when making the connection                                                                    |
+| Port              | The port to use when connecting to the SSH daemon of the server                                                                                |
+| Protocol          | The tcp protocol to be used: `"tcp", "tcp4" "tcp6"`                                                                                            |
+| Passphrase        | The Passphrase to unlock the provided SSH key (leave blank if no Passphrase is required)                                                       |
+| Password          | The Password to use to login the specified user                                                                                                |
+| Timeout           | The length of time to wait before timing out the request                                                                                       |
+| Proxy             | An additional set of configuration params that will be used to SSH into an additional server via the server configured in this top-level block |
+| Ciphers           | An array of ciphers (e.g. aes256-ctr) to enable for the SSH connection                                                                         |
+| KeyExchanges      | An array of key exchanges (e.g. ecdh-sha2-nistp384) to enable for the SSH connection                                                           |
+| Fingerprint       | The expected fingerprint to be returned by the SSH server, results in a fingerprint error if they do not match                                 |
+| UseInsecureCipher | Enables the use of insecure ciphers and key exchanges that are insecure and can lead to compromise, [see ssh](#ssh)                            |
 
 NOTE: Please view the reference documentation for the most up to date properties of [MakeConfig](https://pkg.go.dev/github.com/appleboy/easyssh-proxy#MakeConfig) and [DefaultConfig](https://pkg.go.dev/github.com/appleboy/easyssh-proxy#DefaultConfig)
 
@@ -190,7 +190,7 @@ See [examples/proxy/proxy.go](./_examples/proxy/proxy.go)
   }
 ```
 
-NOTE: Properties for the Proxy connection are not inherited from the Jumphost. You must explicitly specify them in the DefaultConfig struct. 
+NOTE: Properties for the Proxy connection are not inherited from the Jumphost. You must explicitly specify them in the DefaultConfig struct.
 
 e.g. A custom `Timeout` length must be specified for both the Jumphost (intermediary server) and the destination server.
 
