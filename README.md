@@ -244,3 +244,39 @@ func main() {
   }
 }
 ```
+
+### WiteFile
+
+See [examples/writeFile/writeFile.go](./_examples/writeFile/writeFile.go)
+
+```go
+func (ssh_conf *MakeConfig) WriteFile(reader io.Reader, size int64, etargetFile string) error
+```
+
+```go
+func main() {
+  // Create MakeConfig instance with remote username, server address and path to private key.
+  ssh := &easyssh.MakeConfig{
+    Server:  "localhost",
+    User:    "drone-scp",
+    KeyPath: "./tests/.ssh/id_rsa",
+    Port:    "22",
+    Timeout: 60 * time.Second,
+  }
+
+  fileContents := "Example Text..."
+  reader := strings.NewReader(fileContents)
+
+  // Write a file to the remote server using the writeFile command.
+  // Second arguement specifies the number of bytes to write to the server from the reader.
+  if err := client.WriteFile(reader, int64(len(fileContents)), "/home/user/foo.txt"); err != nil {
+    return fmt.Errorf("Error: failed to write file to client. error: %w", err)
+  }
+}
+```
+
+| property    | description                                                         |
+| ----------- | ------------------------------------------------------------------- |
+| reader      | The `io.reader` who's contents will be read and saved to the server |
+| size        | The number of bytes to be read from the `io.reader`                 |
+| etargetFile | The location on the server that the file will be written to         |
