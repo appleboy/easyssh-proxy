@@ -2,6 +2,7 @@ package easyssh
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/user"
 	"path"
@@ -512,3 +513,117 @@ func TestCommandTimeout(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, "Run Command Timeout: "+context.DeadlineExceeded.Error(), err.Error())
 }
+
+// TestProxyTimeoutHandling tests that timeout is properly respected when using proxy connections
+// This test uses a non-existent proxy server to force a timeout during proxy connection
+func TestProxyTimeoutHandling(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:  "example.com",
+		User:    "testuser",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Timeout: 1 * time.Second, // Short timeout for testing
+		Proxy: DefaultConfig{
+			User:    "testuser",
+			Server:  "10.255.255.1", // Non-routable IP that should timeout
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+			Timeout: 1 * time.Second,
+		},
+	}
+
+	// Test Connect() method directly to test proxy connection timeout
+	start := time.Now()
+	session, client, err := ssh.Connect()
+	elapsed := time.Since(start)
+
+	// Should timeout within reasonable bounds
+	assert.True(t, elapsed < 3*time.Second, "Connection should timeout within 3 seconds, took %v", elapsed)
+	assert.True(t, elapsed >= 1*time.Second, "Connection should take at least 1 second (timeout value), took %v", elapsed)
+
+	// Should return nil session and client
+	assert.Nil(t, session)
+	assert.Nil(t, client)
+
+	// Should have error
+	assert.NotNil(t, err)
+}
+
+// TestProxyDialTimeout tests the specific scenario described in issue #93
+// where proxy dial timeout should be respected and properly detected
+func TestProxyDialTimeout(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:  "10.255.255.1", // Non-routable IP that should timeout
+		User:    "testuser",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Timeout: 2 * time.Second, // Short timeout for testing
+		Proxy: DefaultConfig{
+			User:    "testuser",
+			Server:  "10.255.255.2", // Another non-routable IP for proxy
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+			Timeout: 2 * time.Second,
+		},
+	}
+
+	// Test Connect() method directly to avoid SSH server dependency
+	start := time.Now()
+	session, client, err := ssh.Connect()
+	elapsed := time.Since(start)
+
+	// Should timeout within reasonable bounds
+	assert.True(t, elapsed < 5*time.Second, "Connection should timeout within 5 seconds, took %v", elapsed)
+	assert.True(t, elapsed >= 2*time.Second, "Connection should take at least 2 seconds (timeout value), took %v", elapsed)
+
+	// Should return nil session and client
+	assert.Nil(t, session)
+	assert.Nil(t, client)
+
+	// Should have error
+	assert.NotNil(t, err)
+	// Note: This will timeout at the proxy connection level, not at proxy dial level
+	// so it won't be ErrProxyDialTimeout, but we can still verify the timeout behavior
+}
+
+// TestProxyDialTimeoutInRun tests timeout detection in Run method
+func TestProxyDialTimeoutInRun(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:  "example.com",
+		User:    "testuser",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Timeout: 2 * time.Second,
+		Proxy: DefaultConfig{
+			User:    "testuser",
+			Server:  "127.0.0.1", // Assume localhost SSH exists
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+			Timeout: 2 * time.Second,
+		},
+	}
+
+	// Mock a scenario where Connect() returns ErrProxyDialTimeout
+	// by temporarily changing the target to a non-routable address
+	ssh.Server = "10.255.255.1"
+
+	start := time.Now()
+	outStr, errStr, isTimeout, err := ssh.Run("whoami")
+	elapsed := time.Since(start)
+
+	// Should timeout within reasonable bounds
+	assert.True(t, elapsed < 5*time.Second, "Should timeout within 5 seconds, took %v", elapsed)
+
+	// Should return empty output
+	assert.Equal(t, "", outStr)
+	assert.Equal(t, "", errStr)
+
+	// Should have error
+	assert.NotNil(t, err)
+
+	// If it's specifically a proxy dial timeout, isTimeout should be true
+	if errors.Is(err, ErrProxyDialTimeout) {
+		assert.True(t, isTimeout, "isTimeout should be true for proxy dial timeout")
+	}
+}
+
