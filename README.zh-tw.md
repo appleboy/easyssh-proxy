@@ -30,6 +30,14 @@ easyssh-proxy 提供了一個用 Go 語言實現的一些 SSH 協議功能的簡
      192.168.1.5       121.1.2.3         10.10.29.68
 ```
 
+## 安裝
+
+```bash
+go get github.com/appleboy/easyssh-proxy
+```
+
+**需求：** Go 1.24 或更高版本
+
 ## 使用方法
 
 你可以在 [`examples`](./_examples/) 資料夾中看到 `ssh`、`scp`、`Proxy` 和 `stream` 命令的詳細範例。
@@ -157,7 +165,7 @@ func main() {
   }
 
   // Call Scp method with file you want to upload to remote server.
-  // Please make sure the `tmp` floder exists.
+  // Please make sure the `tmp` folder exists.
   err := ssh.Scp("/root/source.csv", "/tmp/target.csv")
 
   // Handle errors
@@ -242,3 +250,39 @@ func main() {
   }
 }
 ```
+
+### WriteFile
+
+參見 [examples/writeFile/writeFile.go](./_examples/writeFile/writeFile.go)
+
+```go
+func (ssh_conf *MakeConfig) WriteFile(reader io.Reader, size int64, etargetFile string) error
+```
+
+```go
+func main() {
+  // 使用遠程用戶名、伺服器地址和私鑰路徑創建 MakeConfig 實例。
+  ssh := &easyssh.MakeConfig{
+    Server:  "localhost",
+    User:    "drone-scp",
+    KeyPath: "./tests/.ssh/id_rsa",
+    Port:    "22",
+    Timeout: 60 * time.Second,
+  }
+
+  fileContents := "Example Text..."
+  reader := strings.NewReader(fileContents)
+
+  // 使用 writeFile 命令將文件寫入到遠程伺服器。
+  // 第二個參數指定從 reader 中寫入到伺服器的字節數。
+  if err := ssh.WriteFile(reader, int64(len(fileContents)), "/home/user/foo.txt"); err != nil {
+    return fmt.Errorf("錯誤：無法將文件寫入到客戶端。錯誤：%w", err)
+  }
+}
+```
+
+| 屬性        | 描述                                          |
+| ----------- | --------------------------------------------- |
+| reader      | 將讀取其內容並保存到伺服器的 `io.reader`      |
+| size        | 要從 `io.reader` 中讀取的字節數               |
+| etargetFile | 文件將被寫入到伺服器上的位置                   |

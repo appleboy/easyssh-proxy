@@ -32,6 +32,14 @@ This project is forked from [easyssh](https://github.com/hypersleep/easyssh) but
      192.168.1.5       121.1.2.3         10.10.29.68
 ```
 
+## Installation
+
+```bash
+go get github.com/appleboy/easyssh-proxy
+```
+
+**Requirements:** Go 1.24 or higher
+
 ## Usage
 
 You can see detailed examples of the `ssh`, `scp`, `Proxy`, and `stream` commands inside the [`examples`](./_examples/) folder.
@@ -245,7 +253,7 @@ func main() {
 }
 ```
 
-### WiteFile
+### WriteFile
 
 See [examples/writeFile/writeFile.go](./_examples/writeFile/writeFile.go)
 
@@ -268,8 +276,8 @@ func main() {
   reader := strings.NewReader(fileContents)
 
   // Write a file to the remote server using the writeFile command.
-  // Second arguement specifies the number of bytes to write to the server from the reader.
-  if err := client.WriteFile(reader, int64(len(fileContents)), "/home/user/foo.txt"); err != nil {
+  // Second argument specifies the number of bytes to write to the server from the reader.
+  if err := ssh.WriteFile(reader, int64(len(fileContents)), "/home/user/foo.txt"); err != nil {
     return fmt.Errorf("Error: failed to write file to client. error: %w", err)
   }
 }
