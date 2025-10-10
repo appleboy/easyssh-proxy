@@ -28,6 +28,11 @@ var (
 	defaultBufferSize = 4096
 )
 
+var (
+	// ErrProxyDialTimeout is returned when proxy dial connection times out
+	ErrProxyDialTimeout = errors.New("proxy dial timeout")
+)
+
 type Protocol string
 
 const (
@@ -253,7 +258,43 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			return nil, nil, err
 		}
 
-		conn, err := proxyClient.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
+		// Apply timeout to the connection from proxy to target server
+		timeout := ssh_conf.Timeout
+		if timeout == 0 {
+			timeout = defaultTimeout
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		type connResult struct {
+			conn net.Conn
+			err  error
+		}
+
+		connCh := make(chan connResult, 1)
+		go func() {
+			conn, err := proxyClient.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
+			select {
+			case connCh <- connResult{conn: conn, err: err}:
+				// Successfully sent result
+			case <-ctx.Done():
+				// Context was cancelled, clean up the connection if it was established
+				if conn != nil {
+					conn.Close()
+				}
+			}
+		}()
+
+		var conn net.Conn
+		select {
+		case result := <-connCh:
+			conn = result.conn
+			err = result.err
+		case <-ctx.Done():
+			return nil, nil, fmt.Errorf("%w: %v", ErrProxyDialTimeout, ctx.Err())
+		}
+
 		if err != nil {
 			return nil, nil, err
 		}
@@ -413,6 +454,10 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 func (ssh_conf *MakeConfig) Run(command string, timeout ...time.Duration) (outStr string, errStr string, isTimeout bool, err error) {
 	stdoutChan, stderrChan, doneChan, errChan, err := ssh_conf.Stream(command, timeout...)
 	if err != nil {
+		// Check if the error is from a proxy dial timeout
+		if errors.Is(err, ErrProxyDialTimeout) {
+			isTimeout = true
+		}
 		return outStr, errStr, isTimeout, err
 	}
 	// read from the output channel until the done signal is passed
