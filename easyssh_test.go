@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"runtime"
 	"testing"
 	"time"
 
@@ -625,5 +626,43 @@ func TestProxyDialTimeoutInRun(t *testing.T) {
 	if errors.Is(err, ErrProxyDialTimeout) {
 		assert.True(t, isTimeout, "isTimeout should be true for proxy dial timeout")
 	}
+}
+
+// TestProxyGoroutineLeak tests that no goroutines are leaked when proxy dial times out
+func TestProxyGoroutineLeak(t *testing.T) {
+	// Get initial goroutine count
+	initialGoroutines := runtime.NumGoroutine()
+
+	ssh := &MakeConfig{
+		Server:  "10.255.255.1", // Non-routable IP that should timeout
+		User:    "testuser",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Timeout: 1 * time.Second, // Short timeout
+		Proxy: DefaultConfig{
+			User:    "testuser",
+			Server:  "10.255.255.2", // Another non-routable IP for proxy
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+			Timeout: 1 * time.Second,
+		},
+	}
+
+	// Run multiple timeout operations
+	for i := 0; i < 5; i++ {
+		_, _, err := ssh.Connect()
+		assert.NotNil(t, err) // Should have error due to timeout
+	}
+
+	// Give some time for goroutines to cleanup
+	time.Sleep(100 * time.Millisecond)
+	runtime.GC() // Force garbage collection
+
+	// Check final goroutine count - should not have grown significantly
+	finalGoroutines := runtime.NumGoroutine()
+
+	// Allow for some variance due to test framework overhead, but shouldn't grow by more than 2-3 goroutines
+	assert.True(t, finalGoroutines <= initialGoroutines+3,
+		"Goroutine leak detected: initial=%d, final=%d", initialGoroutines, finalGoroutines)
 }
 

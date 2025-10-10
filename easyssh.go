@@ -275,7 +275,15 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		connCh := make(chan connResult, 1)
 		go func() {
 			conn, err := proxyClient.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
-			connCh <- connResult{conn: conn, err: err}
+			select {
+			case connCh <- connResult{conn: conn, err: err}:
+				// Successfully sent result
+			case <-ctx.Done():
+				// Context was cancelled, clean up the connection if it was established
+				if conn != nil {
+					conn.Close()
+				}
+			}
 		}()
 
 		var conn net.Conn
