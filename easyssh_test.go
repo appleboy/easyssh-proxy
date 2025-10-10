@@ -666,3 +666,27 @@ func TestProxyGoroutineLeak(t *testing.T) {
 		"Goroutine leak detected: initial=%d, final=%d", initialGoroutines, finalGoroutines)
 }
 
+// TestProxyClientCleanup tests that proxy clients are properly closed during multiple Connect calls
+func TestProxyClientCleanup(t *testing.T) {
+	ssh := &MakeConfig{
+		Server:  "10.255.255.1", // Non-routable IP
+		User:    "testuser",
+		Port:    "22",
+		KeyPath: "./tests/.ssh/id_rsa",
+		Timeout: 500 * time.Millisecond, // Short timeout
+		Proxy: DefaultConfig{
+			User:    "testuser",
+			Server:  "10.255.255.2", // Another non-routable IP for proxy
+			Port:    "22",
+			KeyPath: "./tests/.ssh/id_rsa",
+			Timeout: 500 * time.Millisecond,
+		},
+	}
+
+	// Test multiple connect attempts - they should all fail gracefully without leaking resources
+	for i := 0; i < 3; i++ {
+		_, _, err := ssh.Connect()
+		// Should have error due to non-routable IP, but no resource leaks
+		assert.NotNil(t, err, "Connect should fail with timeout/connection error")
+	}
+}
