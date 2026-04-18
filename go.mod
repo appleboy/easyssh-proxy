@@ -1,6 +1,6 @@
 module github.com/appleboy/easyssh-proxy
 
-go 1.24.0
+go 1.25.9
 
 require (
 	github.com/ScaleFT/sshkeys v1.4.0

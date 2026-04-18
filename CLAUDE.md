@@ -78,7 +78,7 @@ The project uses golangci-lint via GitHub Actions. No local lint command is defi
 ### CI/CD
 
 - GitHub Actions workflow in `.github/workflows/testing.yml`
-- Runs tests in Go 1.23 Alpine container
+- Runs tests in Go 1.25 and 1.26 Alpine containers
 - Includes golangci-lint for code quality
 - Codecov integration for coverage reporting
 
