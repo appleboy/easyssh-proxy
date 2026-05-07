@@ -232,7 +232,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 		UseInsecureCipher: ssh_conf.UseInsecureCipher,
 	})
 	if closer != nil {
-		defer closer.Close()
+		defer func() { _ = closer.Close() }()
 	}
 
 	// Enable proxy command
@@ -250,7 +250,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			UseInsecureCipher: ssh_conf.Proxy.UseInsecureCipher,
 		})
 		if closer != nil {
-			defer closer.Close()
+			defer func() { _ = closer.Close() }()
 		}
 
 		proxyClient, err := ssh.Dial(string(ssh_conf.Proxy.Protocol), net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
@@ -281,7 +281,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			case <-ctx.Done():
 				// Context was cancelled, clean up the connection if it was established
 				if conn != nil {
-					conn.Close()
+					_ = conn.Close()
 				}
 			}
 		}()
@@ -325,7 +325,7 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 		}
 		if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
-			session.Close()
+			_ = session.Close()
 			return nil, nil, err
 		}
 	}
@@ -352,20 +352,20 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	// connect to both outputs (they are of type io.Reader)
 	outReader, err := session.StdoutPipe()
 	if err != nil {
-		client.Close()
-		session.Close()
+		_ = client.Close()
+		_ = session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 	errReader, err := session.StderrPipe()
 	if err != nil {
-		client.Close()
-		session.Close()
+		_ = client.Close()
+		_ = session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 	err = session.Start(command)
 	if err != nil {
-		client.Close()
-		session.Close()
+		_ = client.Close()
+		_ = session.Close()
 		return stdoutChan, stderrChan, doneChan, errChan, err
 	}
 
@@ -391,8 +391,8 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 	go func(stdoutScanner, stderrScanner *bufio.Reader, stdoutChan, stderrChan chan string, doneChan chan bool, errChan chan error) {
 		defer close(doneChan)
 		defer close(errChan)
-		defer client.Close()
-		defer session.Close()
+		defer func() { _ = client.Close() }()
+		defer func() { _ = session.Close() }()
 
 		// default timeout value
 		executeTimeout := defaultTimeout
@@ -493,8 +493,8 @@ func (ssh_conf *MakeConfig) WriteFile(reader io.Reader, size int64, etargetFile 
 	if err != nil {
 		return err
 	}
-	defer client.Close()
-	defer session.Close()
+	defer func() { _ = client.Close() }()
+	defer func() { _ = session.Close() }()
 
 	targetFile := filepath.Base(etargetFile)
 
@@ -526,7 +526,7 @@ func (ssh_conf *MakeConfig) WriteFile(reader io.Reader, size int64, etargetFile 
 
 	copyErrC := make(chan error, 1)
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 		copyErrC <- copyF()
 	}()
 
@@ -545,15 +545,15 @@ func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
 	if err != nil {
 		return err
 	}
-	defer client.Close()
-	defer session.Close()
+	defer func() { _ = client.Close() }()
+	defer func() { _ = session.Close() }()
 
 	src, srcErr := os.Open(sourceFile)
 
 	if srcErr != nil {
 		return srcErr
 	}
-	defer src.Close()
+	defer func() { _ = src.Close() }()
 
 	srcStat, statErr := src.Stat()
 
