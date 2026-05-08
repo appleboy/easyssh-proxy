@@ -6,11 +6,8 @@ on:
 
 jobs:
   lint:
-    strategy:
-      matrix:
-        go: [1.25, 1.26]
     runs-on: ubuntu-latest
-    name: lint @ Go ${{ matrix.go }}
+    name: lint
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -20,7 +17,8 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go }}
+          go-version-file: go.mod
+          check-latest: true
       - name: Setup golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
@@ -29,10 +27,7 @@ jobs:
 
   testing:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ['1.25', '1.26']
-    container: golang:${{ matrix.go-version }}-alpine
+    container: golang:1.25-alpine
     steps:
       - name: Checkout
         uses: actions/checkout@v6
