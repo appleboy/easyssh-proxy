@@ -1,6 +1,6 @@
 module example
 
-go 1.24.0
+go 1.25.10
 
 require github.com/appleboy/easyssh-proxy v1.5.0
 
