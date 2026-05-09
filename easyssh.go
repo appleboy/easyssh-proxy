@@ -292,18 +292,24 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			conn = result.conn
 			err = result.err
 		case <-ctx.Done():
+			proxyClient.Close()
 			return nil, nil, fmt.Errorf("%w: %v", ErrProxyDialTimeout, ctx.Err())
 		}
 
 		if err != nil {
+			proxyClient.Close()
 			return nil, nil, err
 		}
 
 		ncc, chans, reqs, err := ssh.NewClientConn(conn, net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
 		if err != nil {
+			proxyClient.Close()
 			return nil, nil, err
 		}
 
+		// Close the proxy client after successfully establishing the target connection
+		// The target connection (ncc) is now independent of the proxy client
+		proxyClient.Close()
 		client = ssh.NewClient(ncc, chans, reqs)
 	} else {
 		client, err = ssh.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
