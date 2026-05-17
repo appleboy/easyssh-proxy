@@ -1,6 +1,7 @@
 package easyssh
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -664,5 +665,47 @@ func TestProxyGoroutineLeak(t *testing.T) {
 	// Allow for some variance due to test framework overhead, but shouldn't grow by more than 2-3 goroutines
 	assert.True(t, finalGoroutines <= initialGoroutines+3,
 		"Goroutine leak detected: initial=%d, final=%d", initialGoroutines, finalGoroutines)
+}
+
+// TestShellQuote pins the contract of the helper used to defend the SCP code
+// path against remote command injection. If any of these cases regress, an
+// attacker-controlled target path could execute arbitrary commands on the
+// remote host.
+func TestShellQuote(t *testing.T) {
+	cases := []struct {
+		in, want string
+	}{
+		{"", "''"},
+		{"foo", "'foo'"},
+		{"foo bar", "'foo bar'"},
+		{"foo/bar.txt", "'foo/bar.txt'"},
+		{"foo'bar", `'foo'\''bar'`},
+		{"'", `''\'''`},
+		{"$(rm -rf /)", "'$(rm -rf /)'"},
+		{"`id`", "'`id`'"},
+		{"a;b|c&d", "'a;b|c&d'"},
+		{`"quoted"`, `'"quoted"'`},
+	}
+	for _, c := range cases {
+		got := shellQuote(c.in)
+		assert.Equal(t, c.want, got, "shellQuote(%q)", c.in)
+	}
+}
+
+// TestWriteFileRejectsInvalidTargetName guards the SCP protocol-injection
+// fix: a target filename containing newline/CR/NUL must be rejected before
+// any network I/O, so a malicious caller cannot smuggle extra SCP control
+// records (e.g. a second "C0755 ... /etc/shadow" line) into the stream.
+func TestWriteFileRejectsInvalidTargetName(t *testing.T) {
+	ssh := &MakeConfig{Server: "127.0.0.1", User: "nobody", Port: "22"}
+	for _, bad := range []string{
+		"foo\nbar",
+		"foo\rbar",
+		"foo\x00bar",
+		"dir/with\nnewline",
+	} {
+		err := ssh.WriteFile(bytes.NewReader(nil), 0, bad)
+		assert.ErrorIs(t, err, ErrInvalidTargetFile, "WriteFile(%q) should reject", bad)
+	}
 }
 
