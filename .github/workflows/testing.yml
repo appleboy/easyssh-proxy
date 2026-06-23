@@ -10,7 +10,7 @@ jobs:
     name: lint
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # all history for all branches and tags
 
@@ -30,7 +30,7 @@ jobs:
     container: golang:1.25-alpine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # all history for all branches and tags
 
