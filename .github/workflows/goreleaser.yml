@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0 # all history for all branches and tags
 
       - name: Setup go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           check-latest: true
