@@ -27,7 +27,11 @@ jobs:
 
   testing:
     runs-on: ubuntu-latest
-    container: golang:1.26.8-alpine
+    strategy:
+      matrix:
+        go: ["1.26", "1.27"]
+    name: Go ${{ matrix.go }}
+    container: golang:${{ matrix.go }}-alpine
     steps:
       - name: Checkout
         uses: actions/checkout@v7
