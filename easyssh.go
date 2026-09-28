@@ -41,9 +41,9 @@ var (
 type Protocol string
 
 const (
-	PROTOCOL_TCP  Protocol = "tcp"
-	PROTOCOL_TCP4 Protocol = "tcp4"
-	PROTOCOL_TCP6 Protocol = "tcp6"
+	PROTOCOL_TCP  Protocol = "tcp"  //nolint:staticcheck // Preserve the exported name for API compatibility.
+	PROTOCOL_TCP4 Protocol = "tcp4" //nolint:staticcheck // Preserve the exported name for API compatibility.
+	PROTOCOL_TCP6 Protocol = "tcp6" //nolint:staticcheck // Preserve the exported name for API compatibility.
 )
 
 type (
@@ -161,7 +161,10 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 		var signer ssh.Signer
 		var err error
 		if config.Passphrase != "" {
-			signer, err = sshkeys.ParseEncryptedPrivateKey([]byte(config.Key), []byte(config.Passphrase))
+			signer, err = sshkeys.ParseEncryptedPrivateKey(
+				[]byte(config.Key),
+				[]byte(config.Passphrase),
+			)
 		} else {
 			signer, err = ssh.ParsePrivateKey([]byte(config.Key))
 		}
@@ -182,7 +185,11 @@ func getSSHConfig(config DefaultConfig) (*ssh.ClientConfig, io.Closer) {
 	if config.UseInsecureCipher {
 		c.SetDefaults()
 		c.Ciphers = append(c.Ciphers, "aes128-cbc", "aes192-cbc", "aes256-cbc", "3des-cbc")
-		c.KeyExchanges = append(c.KeyExchanges, "diffie-hellman-group-exchange-sha1", "diffie-hellman-group-exchange-sha256")
+		c.KeyExchanges = append(
+			c.KeyExchanges,
+			"diffie-hellman-group-exchange-sha1",
+			"diffie-hellman-group-exchange-sha256",
+		)
 	}
 
 	if len(config.Ciphers) > 0 {
@@ -259,7 +266,11 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			defer func() { _ = closer.Close() }()
 		}
 
-		proxyClient, err := ssh.Dial(string(ssh_conf.Proxy.Protocol), net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port), proxyConfig)
+		proxyClient, err := ssh.Dial(
+			string(ssh_conf.Proxy.Protocol),
+			net.JoinHostPort(ssh_conf.Proxy.Server, ssh_conf.Proxy.Port),
+			proxyConfig,
+		)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -280,7 +291,10 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 
 		connCh := make(chan connResult, 1)
 		go func() {
-			conn, err := proxyClient.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port))
+			conn, err := proxyClient.Dial(
+				string(ssh_conf.Protocol),
+				net.JoinHostPort(ssh_conf.Server, ssh_conf.Port),
+			)
 			select {
 			case connCh <- connResult{conn: conn, err: err}:
 				// Successfully sent result
@@ -307,7 +321,11 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			return nil, nil, err
 		}
 
-		ncc, chans, reqs, err := ssh.NewClientConn(conn, net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		ncc, chans, reqs, err := ssh.NewClientConn(
+			conn,
+			net.JoinHostPort(ssh_conf.Server, ssh_conf.Port),
+			targetConfig,
+		)
 		if err != nil {
 			_ = proxyClient.Close()
 			return nil, nil, err
@@ -320,7 +338,11 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 			_ = proxyClient.Close()
 		}()
 	} else {
-		client, err = ssh.Dial(string(ssh_conf.Protocol), net.JoinHostPort(ssh_conf.Server, ssh_conf.Port), targetConfig)
+		client, err = ssh.Dial(
+			string(ssh_conf.Protocol),
+			net.JoinHostPort(ssh_conf.Server, ssh_conf.Port),
+			targetConfig,
+		)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -350,7 +372,10 @@ func (ssh_conf *MakeConfig) Connect() (*ssh.Session, *ssh.Client, error) {
 // Stream returns one channel that combines the stdout and stderr of the command
 // as it is run on the remote machine, and another that sends true when the
 // command is done. The sessions and channels will then be closed.
-func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
+func (ssh_conf *MakeConfig) Stream(
+	command string,
+	timeout ...time.Duration,
+) (<-chan string, <-chan string, <-chan bool, <-chan error, error) {
 	// continuously send the command's output over the channel
 	stdoutChan := make(chan string)
 	stderrChan := make(chan string)
@@ -444,7 +469,10 @@ func (ssh_conf *MakeConfig) Stream(command string, timeout ...time.Duration) (<-
 }
 
 // Run command on remote machine and returns its stdout as a string
-func (ssh_conf *MakeConfig) Run(command string, timeout ...time.Duration) (outStr string, errStr string, isTimeout bool, err error) {
+func (ssh_conf *MakeConfig) Run(
+	command string,
+	timeout ...time.Duration,
+) (outStr, errStr string, isTimeout bool, err error) {
 	stdoutChan, stderrChan, doneChan, errChan, err := ssh_conf.Stream(command, timeout...)
 	if err != nil {
 		// Check if the error is from a proxy dial timeout
@@ -547,7 +575,7 @@ func shellQuote(s string) string {
 }
 
 // Scp uploads sourceFile to remote machine like native scp console app.
-func (ssh_conf *MakeConfig) Scp(sourceFile string, etargetFile string) error {
+func (ssh_conf *MakeConfig) Scp(sourceFile, etargetFile string) error {
 	session, client, err := ssh_conf.Connect()
 	if err != nil {
 		return err

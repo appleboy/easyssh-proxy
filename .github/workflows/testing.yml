@@ -18,16 +18,20 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+          cache-dependency-path: |
+            go.sum
+            go.tools.sum
           check-latest: true
-      - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: v2.12
-          args: --verbose
+      - name: Run golangci-lint
+        run: make lint
 
   testing:
     runs-on: ubuntu-latest
-    container: golang:1.25-alpine
+    strategy:
+      matrix:
+        go: ["1.26", "1.27"]
+    name: Go ${{ matrix.go }}
+    container: golang:${{ matrix.go }}-alpine
     steps:
       - name: Checkout
         uses: actions/checkout@v7
