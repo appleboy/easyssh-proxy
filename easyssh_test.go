@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -34,16 +35,16 @@ func getHostPublicKeyFile(keypath string) (ssh.PublicKey, error) {
 func TestGetKeyFile(t *testing.T) {
 	// missing file
 	_, err := getKeyFile("abc", "")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Equal(t, "open abc: no such file or directory", err.Error())
 
 	// wrong format
 	_, err = getKeyFile("./tests/.ssh/id_rsa.pub", "")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Equal(t, "ssh: no key found", err.Error())
 
 	_, err = getKeyFile("./tests/.ssh/id_rsa", "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = getKeyFile("./tests/.ssh/test", "1234")
 	assert.NoError(t, err)
@@ -60,13 +61,13 @@ func TestRunCommandWithFingerprint(t *testing.T) {
 	}
 
 	outStr, errStr, isTimeout, err := sshConf.Run("whoami", 10)
-	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, outStr)
+	assert.Empty(t, errStr)
 	assert.False(t, isTimeout)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	hostKey, err := getHostPublicKeyFile("/etc/ssh/ssh_host_rsa_key.pub")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	sshConf = &MakeConfig{
 		Server:      "localhost",
@@ -78,7 +79,7 @@ func TestRunCommandWithFingerprint(t *testing.T) {
 
 	outStr, errStr, isTimeout, err = sshConf.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
@@ -95,9 +96,9 @@ func TestPrivateKeyAndPassword(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// provide correct password and wrong private key
 	ssh = &MakeConfig{
@@ -110,9 +111,9 @@ func TestPrivateKeyAndPassword(t *testing.T) {
 
 	outStr, errStr, isTimeout, err = ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// provide wrong password and correct private key
 	ssh = &MakeConfig{
@@ -125,7 +126,7 @@ func TestPrivateKeyAndPassword(t *testing.T) {
 
 	outStr, errStr, isTimeout, err = ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
@@ -140,10 +141,10 @@ func TestRunCommand(t *testing.T) {
 	}
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami", 10)
-	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, outStr)
+	assert.Empty(t, errStr)
 	assert.False(t, isTimeout)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ssh = &MakeConfig{
 		Server:  "localhost",
@@ -154,30 +155,30 @@ func TestRunCommand(t *testing.T) {
 
 	outStr, errStr, isTimeout, err = ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// error message: not found
 	outStr, errStr, isTimeout, err = ssh.Run("whoami1234")
-	assert.Equal(t, "", outStr)
+	assert.Empty(t, outStr)
 	assert.Equal(t, "sh: whoami1234: not found\n", errStr)
 	assert.True(t, isTimeout)
 	// Process exited with status 127
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// error message: Run Command Timeout
 	outStr, errStr, isTimeout, err = ssh.Run("sleep 2", 1*time.Second)
-	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, outStr)
+	assert.Empty(t, errStr)
 	assert.False(t, isTimeout)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Equal(t, "Run Command Timeout: "+context.DeadlineExceeded.Error(), err.Error())
 
 	// test exit code
 	outStr, errStr, isTimeout, err = ssh.Run("exit 1")
-	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, outStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
 	// Process exited with status 1
 	assert.Error(t, err)
@@ -193,7 +194,7 @@ func TestSCPCommand(t *testing.T) {
 	}
 
 	err := ssh.Scp("./tests/a.txt", "a.txt")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ssh = &MakeConfig{
 		Server:  "localhost",
@@ -203,7 +204,7 @@ func TestSCPCommand(t *testing.T) {
 	}
 
 	err = ssh.Scp("./tests/a.txt", "a.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
 	if err != nil {
@@ -253,14 +254,14 @@ ib4KbP5ovZlrjL++akMQ7V2fHzuQIFWnCkDA5c2ZAqzlM+ZN+HRG7gWur7Bt4XH1
 
 	// source file not found
 	err := ssh.Scp("./tests/test.txt", "a.txt")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// target file not found ex: appleboy folder not found
 	err = ssh.Scp("./tests/a.txt", "/appleboy/a.txt")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = ssh.Scp("./tests/a.txt", "a.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
 	if err != nil {
@@ -292,7 +293,7 @@ func TestProxyClient(t *testing.T) {
 	session, client, err := ssh.Connect()
 	assert.Nil(t, session)
 	assert.Nil(t, client)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ssh = &MakeConfig{
 		Server:   "www.che.ccu.edu.tw",
@@ -311,7 +312,7 @@ func TestProxyClient(t *testing.T) {
 	session, client, err = ssh.Connect()
 	assert.Nil(t, session)
 	assert.Nil(t, client)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ssh = &MakeConfig{
 		Server:   "localhost",
@@ -330,7 +331,7 @@ func TestProxyClient(t *testing.T) {
 	session, client, err = ssh.Connect()
 	assert.Nil(t, session)
 	assert.Nil(t, client)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ssh = &MakeConfig{
 		User:    "drone-scp",
@@ -367,7 +368,7 @@ func TestProxyClientSSHCommand(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami")
 	assert.Equal(t, "drone-scp\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
@@ -382,7 +383,7 @@ func TestSCPCommandWithPassword(t *testing.T) {
 	}
 
 	err := ssh.Scp("./tests/b.txt", "b.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
 	if err != nil {
@@ -405,8 +406,8 @@ func TestWrongRawKey(t *testing.T) {
 	}
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami")
-	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, outStr)
+	assert.Empty(t, errStr)
 	assert.False(t, isTimeout)
 	assert.Error(t, err)
 }
@@ -454,7 +455,7 @@ func TestSCPCommandUseInsecureCipher(t *testing.T) {
 	}
 
 	err := ssh.Scp("./tests/a.txt", "a.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	u, err := user.Lookup("drone-scp")
 	if err != nil {
@@ -478,7 +479,7 @@ func TestRootAccount(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami")
 	assert.Equal(t, "root\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
@@ -495,7 +496,7 @@ func TestSudoCommand(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run(`sudo su - -c "whoami"`)
 	assert.Equal(t, "root\r\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.True(t, isTimeout)
 	assert.NoError(t, err)
 }
@@ -510,9 +511,9 @@ func TestCommandTimeout(t *testing.T) {
 
 	outStr, errStr, isTimeout, err := ssh.Run("whoami; sleep 2", 1*time.Second)
 	assert.Equal(t, "root\n", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, errStr)
 	assert.False(t, isTimeout)
-	assert.NotNil(t, err)
+	require.Error(t, err)
 	assert.Equal(t, "Run Command Timeout: "+context.DeadlineExceeded.Error(), err.Error())
 }
 
@@ -540,15 +541,27 @@ func TestProxyTimeoutHandling(t *testing.T) {
 	elapsed := time.Since(start)
 
 	// Should timeout within reasonable bounds
-	assert.True(t, elapsed < 3*time.Second, "Connection should timeout within 3 seconds, took %v", elapsed)
-	assert.True(t, elapsed >= 1*time.Second, "Connection should take at least 1 second (timeout value), took %v", elapsed)
+	assert.Less(
+		t,
+		elapsed,
+		3*time.Second,
+		"Connection should timeout within 3 seconds, took %v",
+		elapsed,
+	)
+	assert.GreaterOrEqual(
+		t,
+		elapsed,
+		1*time.Second,
+		"Connection should take at least 1 second (timeout value), took %v",
+		elapsed,
+	)
 
 	// Should return nil session and client
 	assert.Nil(t, session)
 	assert.Nil(t, client)
 
 	// Should have error
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 // TestProxyDialTimeout tests the specific scenario described in issue #93
@@ -575,15 +588,27 @@ func TestProxyDialTimeout(t *testing.T) {
 	elapsed := time.Since(start)
 
 	// Should timeout within reasonable bounds
-	assert.True(t, elapsed < 5*time.Second, "Connection should timeout within 5 seconds, took %v", elapsed)
-	assert.True(t, elapsed >= 2*time.Second, "Connection should take at least 2 seconds (timeout value), took %v", elapsed)
+	assert.Less(
+		t,
+		elapsed,
+		5*time.Second,
+		"Connection should timeout within 5 seconds, took %v",
+		elapsed,
+	)
+	assert.GreaterOrEqual(
+		t,
+		elapsed,
+		2*time.Second,
+		"Connection should take at least 2 seconds (timeout value), took %v",
+		elapsed,
+	)
 
 	// Should return nil session and client
 	assert.Nil(t, session)
 	assert.Nil(t, client)
 
 	// Should have error
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	// Note: This will timeout at the proxy connection level, not at proxy dial level
 	// so it won't be ErrProxyDialTimeout, but we can still verify the timeout behavior
 }
@@ -614,14 +639,14 @@ func TestProxyDialTimeoutInRun(t *testing.T) {
 	elapsed := time.Since(start)
 
 	// Should timeout within reasonable bounds
-	assert.True(t, elapsed < 5*time.Second, "Should timeout within 5 seconds, took %v", elapsed)
+	assert.Less(t, elapsed, 5*time.Second, "Should timeout within 5 seconds, took %v", elapsed)
 
 	// Should return empty output
-	assert.Equal(t, "", outStr)
-	assert.Equal(t, "", errStr)
+	assert.Empty(t, outStr)
+	assert.Empty(t, errStr)
 
 	// Should have error
-	assert.NotNil(t, err)
+	require.Error(t, err)
 
 	// If it's specifically a proxy dial timeout, isTimeout should be true
 	if errors.Is(err, ErrProxyDialTimeout) {
@@ -650,9 +675,9 @@ func TestProxyGoroutineLeak(t *testing.T) {
 	}
 
 	// Run multiple timeout operations
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		_, _, err := ssh.Connect()
-		assert.NotNil(t, err) // Should have error due to timeout
+		require.Error(t, err) // Should have error due to timeout
 	}
 
 	// Give some time for goroutines to cleanup
@@ -663,7 +688,7 @@ func TestProxyGoroutineLeak(t *testing.T) {
 	finalGoroutines := runtime.NumGoroutine()
 
 	// Allow for some variance due to test framework overhead, but shouldn't grow by more than 2-3 goroutines
-	assert.True(t, finalGoroutines <= initialGoroutines+3,
+	assert.LessOrEqual(t, finalGoroutines, initialGoroutines+3,
 		"Goroutine leak detected: initial=%d, final=%d", initialGoroutines, finalGoroutines)
 }
 
@@ -708,4 +733,3 @@ func TestWriteFileRejectsInvalidTargetName(t *testing.T) {
 		assert.ErrorIs(t, err, ErrInvalidTargetFile, "WriteFile(%q) should reject", bad)
 	}
 }
-
